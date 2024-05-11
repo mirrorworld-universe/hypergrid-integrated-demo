@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "name": "SonicAccountMigrater",
+  "instructions": [
+    {
+      "name": "MigrateRemoteAccounts",
+      "accounts": [
+        { "name": "programid", "isMut": false, "isSigner": false },
+        { "name": "user", "isMut": false, "isSigner": true }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+  ]
+}
