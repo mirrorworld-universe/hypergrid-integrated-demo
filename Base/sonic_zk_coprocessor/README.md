@@ -48,7 +48,7 @@ $ sudo dnf install openssl-devel systemd-devel pkg-config zlib-devel llvm clang 
 
 ```bash
 $ git clone https://github.com/mirrorworld-universe/hypergrid-integrated-demo.git
-$ cd solana
+$ cd hypergrid-integrated-demo/Base/sonic_zk_coprocessor
 ```
 
 ## **3. Build.**
