@@ -15,13 +15,13 @@ npm i
 ## Run Project
 
 ```
-npm dev
+npm run dev
 ```
 
 ## Build Project
 
 ```
-npm build
+npm run build
 ```
 
 ## Run Scripts on Server
