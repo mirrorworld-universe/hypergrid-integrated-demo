@@ -48,8 +48,12 @@ A comprehensive demonstration that showcases the ability to read and write data 
    * [Testing Results](https://docs.google.com/spreadsheets/d/1PPERkiRJ1vpOxsKrMeHiwATo8Bc77SPYZbyhluacBPU/ "Testing Results")
 
 
+## Integrated Demo Video
 
-[![Alt text](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/read-demo.mp4.jpg)](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/)
+   * read-demo  
+   [![Alt text](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/read-demo.mp4.jpg)](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/)
 
+   * write-demo  
+   [![Alt text](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/write-demo.mp4.jpg)](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/)
 
 
