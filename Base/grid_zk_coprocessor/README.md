@@ -114,10 +114,4 @@ better way to solve the same problem, a Pull Request with your solution would mo
 welcome! Likewise, if rewriting a test can better communicate what code it's protecting, please
 send us that patch!
 
-# Disclaimer
 
-This project is a Layer 2 rollup solution for the Solana devnet, and it adopts the core algorithms and operation mechanisms of the Solana devnet. Therefore, all claims, content, designs, algorithms, estimates, roadmaps, specifications, and performance measurements described herein not only adhere to and inherit the statements made by Solana Labs, Inc. regarding the Solana project, but also reflect the good faith efforts of MirrorWorld ("MW"). Readers are responsible for verifying their accuracy and truthfulness. Additionally, nothing in this project constitutes an invitation for investment.
-
-Any content or developer resources provided by MW are for educational and inspirational purposes only. MW does not encourage, induce, or endorse the deployment, integration, or use of any such applications (including the code comprising the Solana blockchain protocol) in violation of applicable laws or regulations and hereby prohibits any such deployment, integration, or use. This includes the violation of export control or sanctions laws of the United States or any other applicable jurisdiction by the reader (a), residing in or being a resident of a country or territory subject to comprehensive sanctions administered by the U.S. Office of Foreign Assets Control (OFAC) (b), or being or working on behalf of a Specially Designated National (SDN) or a person subject to similar blocking or denied party prohibitions (c).
-
-Readers should be aware that U.S. export control and sanctions laws prohibit U.S. persons (and other persons subject to such laws) from transacting with individuals in certain countries and territories or who are on the SDN list. Therefore, individuals risk violating U.S. export controls and sanctions laws by transacting with others using any of the code contained in this repository or its derivatives, who may be sanctioned individuals.
