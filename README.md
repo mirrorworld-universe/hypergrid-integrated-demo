@@ -46,7 +46,7 @@ A comprehensive demonstration that showcases the ability to read and write data 
 
 4. Testing Results:
    
-   * [Testing Results](https://docs.google.com/spreadsheets/d/1PPERkiRJ1vpOxsKrMeHiwATo8Bc77SPYZbyhluacBPU "访问Google")
+   * <a href="https://docs.google.com/spreadsheets/d/1PPERkiRJ1vpOxsKrMeHiwATo8Bc77SPYZbyhluacBPU" target="_blank">Testing Results</a>
 
 
 
