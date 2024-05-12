@@ -56,6 +56,8 @@ A comprehensive demonstration that showcases the ability to read and write data 
 
 ## Quickstart
 
+See [https://internaldocs.sonic.game/](https://internaldocs.sonic.game/)  
+
 ## Disclaimer
 
 This project is a Layer 2 rollup solution for the Solana devnet, and it adopts the core algorithms and operation mechanisms of the Solana devnet. Therefore, all claims, content, designs, algorithms, estimates, roadmaps, specifications, and performance measurements described herein not only adhere to and inherit the statements made by Solana Labs, Inc. regarding the Solana project, but also reflect the good faith efforts of MirrorWorld ("MW"). Readers are responsible for verifying their accuracy and truthfulness. Additionally, nothing in this project constitutes an invitation for investment.
