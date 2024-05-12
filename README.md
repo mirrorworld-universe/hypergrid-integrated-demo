@@ -45,8 +45,8 @@ A comprehensive demonstration that showcases the ability to read and write data 
     * Real-World Simulation Testing: Testing the application in a simulated real-world environment.
 
 4. Testing Results:
-   
-   * <a href="https://docs.google.com/spreadsheets/d/1PPERkiRJ1vpOxsKrMeHiwATo8Bc77SPYZbyhluacBPU" target="_blank">Testing Results</a>
+   * [Testing Results](https://docs.google.com/spreadsheets/d/1PPERkiRJ1vpOxsKrMeHiwATo8Bc77SPYZbyhluacBPU/ "Testing Results")
+
 
 
 
