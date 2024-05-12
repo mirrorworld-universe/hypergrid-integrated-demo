@@ -59,7 +59,7 @@ See [https://internaldocs.sonic.game/](https://internaldocs.sonic.game/)
     * Real-World Simulation Testing: Testing the application in a simulated real-world environment.
 
 4. Testing Results:
-   * [[ Testing Results ]](https://docs.google.com/spreadsheets/d/1PPERkiRJ1vpOxsKrMeHiwATo8Bc77SPYZbyhluacBPU/)  
+   * See [[ Testing Results ]](https://docs.google.com/spreadsheets/d/1PPERkiRJ1vpOxsKrMeHiwATo8Bc77SPYZbyhluacBPU/)  
   
 ## Disclaimer
 
