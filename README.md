@@ -45,12 +45,12 @@ A comprehensive demonstration that showcases the ability to read and write data 
     * Real-World Simulation Testing: Testing the application in a simulated real-world environment.
 
 4. Testing Results:
-   * [[ Testing Results ]](https://docs.google.com/spreadsheets/d/1PPERkiRJ1vpOxsKrMeHiwATo8Bc77SPYZbyhluacBPU/ "Testing Results")  
+   * [[ Testing Results ]](https://docs.google.com/spreadsheets/d/1PPERkiRJ1vpOxsKrMeHiwATo8Bc77SPYZbyhluacBPU/)  
 
 
 ## Demo Video
 
-   * read-demo & write-demo  
+   * [[ Read-Demo & Write-Demo ]](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/tree/main/Docs/)
    [![Alt text](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/read-demo.mp4.jpg)](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/tree/main/Docs/)
 
 ## Quickstart
