@@ -26,9 +26,9 @@ A comprehensive demonstration that showcases the ability to read and write data 
 
 We have produced two videos to demonstrate the features of our product:
 
-See [Read-Demo](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/read-demo.mp4)  
+See [Synchronize NFTs from the Base Layer to Hypergrid](https://internaldocs.sonic.game/images/read-demo.mp4)  
 
-See [Write-Demo](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/write-demo.mp4)
+See [Modifying NFTs on the base layer through Hypergrid](https://internaldocs.sonic.game/images/write-demo.mp4)
     
 [![Alt text](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/read-demo.mp4.jpg)](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/tree/main/Docs/)
 
