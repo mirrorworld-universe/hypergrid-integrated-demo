@@ -24,7 +24,7 @@ A comprehensive demonstration that showcases the ability to read and write data 
 
 
 
-# Sonic HyperGrid Integrated Demo Project Testing Report
+# Integrated Demo Project Testing Report
 
 1. Report Overview
     * Project Name: Sonic HyperGrid Integrated Demo
