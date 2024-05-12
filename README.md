@@ -38,7 +38,7 @@ See [Write-Demo](https://github.com/mirrorworld-universe/hypergrid-integrated-de
 See [https://internaldocs.sonic.game/](https://internaldocs.sonic.game/)    
 
 
-## Testing Report
+## Project Testing Report
 
 1. Report Overview
     * Project Name: Sonic HyperGrid Integrated Demo
