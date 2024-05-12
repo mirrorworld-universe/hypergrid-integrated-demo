@@ -23,6 +23,21 @@ A comprehensive demonstration that showcases the ability to read and write data 
 * Docs: A README.md file that describes the nature of the demo. This file should also contain the results of stress testing.  
 
 
+## Demo Video
+
+We have produced two videos to demonstrate the features of our product:
+
+See [Read-Demo](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/read-demo.mp4)  
+
+See [Write-Demo](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/write-demo.mp4)
+    
+[![Alt text](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/read-demo.mp4.jpg)](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/tree/main/Docs/)
+
+  
+## Quickstart
+
+See [https://internaldocs.sonic.game/](https://internaldocs.sonic.game/)    
+
 
 ## Testing Report
 
@@ -46,24 +61,6 @@ A comprehensive demonstration that showcases the ability to read and write data 
 
 4. Testing Results:
    * [[ Testing Results ]](https://docs.google.com/spreadsheets/d/1PPERkiRJ1vpOxsKrMeHiwATo8Bc77SPYZbyhluacBPU/)  
-
-
-## Demo Video
-
-We have produced two videos to demonstrate the features of our product:
-
-See [Read-Demo](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/read-demo.mp4)  
-
-See [Write-Demo](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/write-demo.mp4)
-    
-[![Alt text](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/read-demo.mp4.jpg)](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/tree/main/Docs/)
-
-  
-## Quickstart
-
-See [https://internaldocs.sonic.game/](https://internaldocs.sonic.game/)    
-
-
   
 ## Disclaimer
 
