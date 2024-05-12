@@ -50,7 +50,11 @@ A comprehensive demonstration that showcases the ability to read and write data 
 
 ## Demo Video
 
-[ Read-Demo & Write-Demo ]
+[ Read-Demo & Write-Demo ]  
+
+See [Read-Demo](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/read-demo.mp4)  
+
+See [Write-Demo](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/write-demo.mp4)
     
 [![Alt text](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/read-demo.mp4.jpg)](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/tree/main/Docs/)
 
