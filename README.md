@@ -23,30 +23,23 @@ A comprehensive demonstration that showcases the ability to read and write data 
 
 # Project Test Report
 
-<table>
-    <thead>
-        <tr bgcolor="#f2f2f2">
-            <th>Test ID</th>
-            <th>Test Category</th>
-            <th>Description</th>
-            <th>Expected Result</th>
-            <th>Actual Result</th>
-            <th>Status</th>
-            <th>Remarks</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>T01</td>
-            <td>Performance Test</td>
-            <td>Test transactions per second</td>
-            <td>1000 transactions per second</td>
-            <td>1200 transactions per second</td>
-            <td>Pass</td>
-            <td>Performance better than expected</td>
-        </tr>
-    </tbody>
-</table>
+1. Report Overview
+    - Project Name: Sonic HyperGrid Integrated Demo
+    - Testing Period: May 6, 2024, to May 9, 2024
+    - Purpose of Testing: 
+      Perform thorough testing to validate the functionality, security, and performance of the read-write synchronization mechanism, including unit testing, integration testing, and real-world simulation testing.
+      The test will be focusing on two parts:
+      (1) The correctness of the state syncing, for instance the non-existence state sync, the out-date-state syncing, the existing data override, etc.
+      (2) The performance of the state syncing, using timestamp or similar metrics to measure the normal transaction without accessing the base layer data and transaction accessing the base layer data.
+
+2. Test Environment
+    - Hardware Environment: 32-core CPU, 64GB RAM, 1T SSD
+    - Software Environment: Ubuntu 22.04 LTS OS
+
+3. Testing Strategy
+    - Unit Testing: Focus on individual components or modules.
+    - Integration Testing: Focus on combined parts of the application to determine if they function together correctly.
+    - Real-World Simulation Testing: Testing the application in a simulated real-world environment.
 
 
 
