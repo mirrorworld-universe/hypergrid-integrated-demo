@@ -35,7 +35,7 @@ See [Write-Demo](https://github.com/mirrorworld-universe/hypergrid-integrated-de
   
 ## Quickstart
 
-See [ Introduction Docs ]  
+See [ Introduction Docs ](https://internaldocs.sonic.game/)  
 
 
 ## Project Testing Report
