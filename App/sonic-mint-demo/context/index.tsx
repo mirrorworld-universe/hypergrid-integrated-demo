@@ -25,23 +25,18 @@ type PageProviderProps = {
 };
 
 export function PageProvider({ children }: PageProviderProps) {
-  const Devnet = { label: 'Devnet', value: web3.clusterApiUrl('devnet') };
-  const Testnet = { label: 'Testnet', value: web3.clusterApiUrl('testnet') };
-  const Mainnet = { label: 'Mainnet', value: web3.clusterApiUrl('mainnet-beta') };
-  const HyperGrid = { label: 'HyperGrid', value: 'https://rpc.hypergrid.dev' };
-  const Custom = { label: 'Custom RPC', value: 'https://rpc.hypergrid.dev' };
+  const Testnet = { label: 'Solana-Testnet', value: web3.clusterApiUrl('testnet') };
+  const Mainnet = { label: 'Solana-Mainnet', value: web3.clusterApiUrl('mainnet-beta') };
+  const Devnet = { label: 'Solana-Devnet', value: web3.clusterApiUrl('devnet'), faucet: 'https://faucet.solana.com/' };
+  const HyperGrid = {
+    label: 'HyperGrid-Sonic',
+    value: 'https://rpc.hypergrid.dev',
+    faucet: 'https://faucet.hypergrid.dev/'
+  };
+  const Custom = { label: 'Custom RPC', value: 'https://rpc2.hypergrid.dev' };
 
   const [endpoint, setEndpoint] = useState(Devnet.value);
   const [walletAccount, setWalletAccount] = useState('');
-
-  useEffect(() => {
-    const endpoint_ = localStorage.getItem('endpoint');
-    if (endpoint_) {
-      setEndpoint(endpoint_);
-    } else {
-      setEndpoint(Devnet.value);
-    }
-  }, []);
 
   const contextValue: PageContextType = {
     Devnet,

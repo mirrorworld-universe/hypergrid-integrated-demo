@@ -4,6 +4,7 @@ import { usePageContext } from '../../context';
 import utils from '../../utils';
 import idl from '../../idl/idl.json';
 import migrateridl from '../../idl/migrateridl.json';
+import { BorderAngular, NetworkRequire } from '../../components/Component';
 import { PhoneIcon, AddIcon, WarningIcon } from '@chakra-ui/icons';
 import {
   Button,
@@ -226,24 +227,6 @@ export default function Read() {
     }
   }
 
-  function getNetworkRequire() {
-    if (endpoint === Devnet.value || endpoint === HyperGrid.value) {
-      return HyperGrid.label;
-    } else {
-      return Custom.label;
-    }
-  }
-
-  function createBorderAngular() {
-    return (
-      <>
-        <img className="border_angular angular1" src="/images/border_angular1.png" alt="" />
-        <img className="border_angular angular2" src="/images/border_angular2.png" alt="" />
-        <img className="border_angular angular3" src="/images/border_angular3.png" alt="" />
-        <img className="border_angular angular4" src="/images/border_angular4.png" alt="" />
-      </>
-    );
-  }
   return (
     <>
       <div className="stages">
@@ -254,14 +237,14 @@ export default function Read() {
             style={{ animationDelay: `${(step - 1) * 0.1}s` }}
             onClick={() => setStepIndex(step)}>
             Stage: {step}
-            {stepIndex == step && createBorderAngular()}
+            {stepIndex == step && <BorderAngular />}
           </div>
         ))}
       </div>
 
       {stepIndex == 1 && (
         <div className="rowbox animate__animated animate__zoomIn">
-          {createBorderAngular()}
+          <BorderAngular />
           <div className="box">
             <div className="title">Fill in the program ID</div>
             <div className="text">Network: {Devnet.label}</div>
@@ -279,7 +262,7 @@ export default function Read() {
 
       {stepIndex == 2 && (
         <div className="rowbox animate__animated animate__zoomIn">
-          {createBorderAngular()}
+          <BorderAngular />
           <div className="box">
             <div className="title">Interact with Devnet programs</div>
             <div className="text">Network: {Devnet.label}</div>
@@ -292,10 +275,14 @@ export default function Read() {
 
       {stepIndex == 3 && (
         <div className="rowbox animate__animated animate__zoomIn">
-          {createBorderAngular()}
+          <BorderAngular />
           <div className="box">
-            <div className="title">Try to interact with the same id program on sonic</div>
-            <div className="text">Network: {getNetworkRequire()}</div>
+            <div className="title">
+              Try to interact with the same id program on <NetworkRequire />
+            </div>
+            <div className="text">
+              Network: <NetworkRequire />
+            </div>
             <div className="text">
               Sync status: <span className={syncStatus ? 'green' : 'red'}>{syncStatus ? 'Synced' : 'Not synced'}</span>
             </div>
@@ -308,10 +295,12 @@ export default function Read() {
 
       {stepIndex == 4 && (
         <div className="rowbox animate__animated animate__zoomIn">
-          {createBorderAngular()}
+          <BorderAngular />
           <div className="box">
             <div className="title">Request sync program</div>
-            <div className="text">Network: {getNetworkRequire()}</div>
+            <div className="text">
+              Network: <NetworkRequire />
+            </div>
             <div className="text">
               Sync status: <span className={syncStatus ? 'green' : 'red'}>{syncStatus ? 'Synced' : 'Not synced'}</span>
             </div>
@@ -323,15 +312,17 @@ export default function Read() {
               ) : (
                 <div className="imgbox animate__animated animate__fadeIn">
                   <div className="imgbox_">
-                    <img className="img2" src="/images/img2.png" alt="" />
+                    <img className="chip" src="/images/chip.png" alt="" />
                     <p className="network">{Devnet.label}</p>
                   </div>
                   <div>
                     <img className="changeimg" src="/images/changeimg.png" alt="" />
                   </div>
                   <div className="imgbox_">
-                    <img className={syncStatus ? 'img2' : 'img2 disabled'} src="/images/img2.png" alt="" />
-                    <p className="network">{getNetworkRequire()}</p>
+                    <img className={syncStatus ? 'chip' : 'chip disabled'} src="/images/chip.png" alt="" />
+                    <p className="network">
+                      <NetworkRequire />
+                    </p>
                   </div>
                 </div>
               )}
@@ -346,25 +337,31 @@ export default function Read() {
 
       {stepIndex == 5 && (
         <div className="rowbox animate__animated animate__zoomIn">
-          {createBorderAngular()}
+          <BorderAngular />
           <div className="box">
-            <div className="title">Try to interact with the same id program on sonic Again</div>
-            <div className="text">Network: {getNetworkRequire()}</div>
+            <div className="title">
+              Try to interact with the same id program on <NetworkRequire /> Again
+            </div>
+            <div className="text">
+              Network: <NetworkRequire />
+            </div>
             <div className="text">
               Sync status: <span className={syncStatus ? 'green' : 'red'}>{syncStatus ? 'Synced' : 'Not synced'}</span>
             </div>
             <div className="syncbox">
               <div className="imgbox animate__animated animate__fadeIn">
                 <div className="imgbox_">
-                  <img className="img2" src="/images/img2.png" alt="" />
+                  <img className="chip" src="/images/chip.png" alt="" />
                   <p className="network">{Devnet.label}</p>
                 </div>
                 <div>
                   <img className="changeimg" src="/images/changeimg.png" alt="" />
                 </div>
                 <div className="imgbox_">
-                  <img className={syncStatus ? 'img2' : 'img2 disabled'} src="/images/img2.png" alt="" />
-                  <p className="network">{getNetworkRequire()}</p>
+                  <img className={syncStatus ? 'chip' : 'chip disabled'} src="/images/chip.png" alt="" />
+                  <p className="network">
+                    <NetworkRequire />
+                  </p>
                 </div>
               </div>
             </div>
@@ -387,7 +384,9 @@ export default function Read() {
                 <div className="nft">
                   <img className="nftimg" src={metadata.image} alt="" />
                   {stepIndex == 5 ? (
-                    <p className="network">{getNetworkRequire()}</p>
+                    <p className="network">
+                      <NetworkRequire />
+                    </p>
                   ) : (
                     <p className="network">{Devnet.label}</p>
                   )}

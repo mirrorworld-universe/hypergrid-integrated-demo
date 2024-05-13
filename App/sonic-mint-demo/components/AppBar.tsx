@@ -33,6 +33,11 @@ export const AppBar = () => {
   const [showCustomBtn, setShowCustomBtn] = useState(false);
 
   useEffect(() => {
+    const endpoint_ = localStorage.getItem('endpoint');
+    if (endpoint_) setEndpoint(endpoint_);
+  }, []);
+
+  useEffect(() => {
     if (!wallet.connected) return;
     setWalletAccount(wallet.publicKey.toBase58());
 
@@ -44,13 +49,13 @@ export const AppBar = () => {
   }, [wallet]);
 
   useEffect(() => {
-    if (!endpoint || !anchorWallet) return;
+    if (!endpoint) return;
     const isNetworks = networks.find((network) => network.value == endpoint);
     if (!isNetworks) setShowCustomBtn(true);
 
+    if (!anchorWallet) return;
     const provider = new anchor.AnchorProvider(new Connection(endpoint), anchorWallet, {});
     anchor.setProvider(provider);
-    // console.log('provider', provider);
   }, [endpoint, anchorWallet]);
 
   const selectRpc = async (value) => {

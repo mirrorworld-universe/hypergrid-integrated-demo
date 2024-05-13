@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export const Dots = () => {
+export default function VantaDots() {
   useEffect(() => {
     const initializeVanta = () => {
       const _window = window as any;
@@ -35,4 +35,4 @@ export const Dots = () => {
     subscribeToEvent();
   }, []);
   return <div className="s-section"></div>;
-};
+}
