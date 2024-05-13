@@ -40,8 +40,7 @@ export default function Read() {
   const { isOpen: isOpenMintSuccess, onOpen: openMintSuccess, onClose: closeMintSuccess } = useDisclosure();
   const { isOpen: isOpenMintFailure, onOpen: openMintFailure, onClose: closeMintFailure } = useDisclosure();
   const { isOpen: isOpenSyncSuccess, onOpen: openSyncSuccess, onClose: closeSyncSuccess } = useDisclosure();
-  const { Devnet, Testnet, Mainnet, HyperGrid, Custom, endpoint, setEndpoint, walletAccount, setWalletAccount } =
-    usePageContext();
+  const { Devnet, currentNet, walletAccount } = usePageContext();
 
   const steps = [1, 2, 3, 4, 5];
   const [stepIndex, setStepIndex] = useState(1);
@@ -55,18 +54,16 @@ export default function Read() {
   const [metadata, setMetadata] = useState<any>();
 
   // useEffect(() => {
-  //   console.log('stepIndex', stepIndex);
-  //   console.log('endpoint', endpoint);
-  //   openMintSuccess();
-  // }, [stepIndex]);
+  //   console.log('currentNet', currentNet);
+  // }, [currentNet]);
 
   function toConfirm() {
     if (!walletAccount) return toast({ title: 'Connect wallet', status: 'warning' });
 
     if (stepIndex > 2) {
-      if (endpoint == Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
+      if (currentNet.value == Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
     } else {
-      if (endpoint !== Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
+      if (currentNet.value !== Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
     }
 
     if (stepIndex == 1) {
@@ -130,7 +127,7 @@ export default function Read() {
     try {
       let provider: any = anchor.getProvider();
       const signer = provider.wallet;
-      const umi = createUmi(endpoint).use(walletAdapterIdentity(signer)).use(mplTokenMetadata());
+      const umi = createUmi(currentNet.value).use(walletAdapterIdentity(signer)).use(mplTokenMetadata());
       const associatedTokenAccount = await getAssociatedTokenAddress(newAccount.publicKey, signer.publicKey);
       let metadataAccount = findMetadataPda(umi, {
         mint: publicKey(newAccount.publicKey)
@@ -189,7 +186,7 @@ export default function Read() {
       const tx = await syncProgram.methods
         .migrateremoteaccounts()
         .accounts({
-          programid: syncProgramId
+          programid: mintProgramId
         })
         .rpc();
 

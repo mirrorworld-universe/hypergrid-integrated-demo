@@ -28,8 +28,7 @@ export default function Write() {
 
   const { isOpen: isOpenUpgradeSuccess, onOpen: openUpgradeSuccess, onClose: closeUpgradeSuccess } = useDisclosure();
   const { isOpen: isOpenMintSuccess, onOpen: openMintSuccess, onClose: closeMintSuccess } = useDisclosure();
-  const { Devnet, Testnet, Mainnet, HyperGrid, Custom, endpoint, setEndpoint, walletAccount, setWalletAccount } =
-    usePageContext();
+  const { Devnet, currentNet, walletAccount } = usePageContext();
 
   const steps = [1, 2, 3, 4, 5];
   const steps2 = [1, 2, 3, 4];
@@ -58,18 +57,16 @@ export default function Write() {
   });
 
   // useEffect(() => {
-  //   console.log('stepIndex', stepIndex);
-  //   console.log('endpoint', endpoint);
-  //   openMintSuccess();
-  // }, [stepIndex]);
+  //   console.log('currentNet', currentNet);
+  // }, [currentNet]);
 
   function toConfirm() {
     if (!walletAccount) return toast({ title: 'Connect wallet', status: 'warning' });
 
     if (stepIndex > 2) {
-      if (endpoint == Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
+      if (currentNet.value == Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
     } else {
-      if (endpoint !== Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
+      if (currentNet.value !== Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
     }
 
     if (stepIndex == 1) {

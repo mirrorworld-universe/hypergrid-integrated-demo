@@ -4,6 +4,7 @@ import * as web3 from '@solana/web3.js';
 type Network = {
   label: string;
   value: string;
+  faucet?: string;
 };
 
 type PageContextType = {
@@ -12,8 +13,8 @@ type PageContextType = {
   Mainnet: Network;
   HyperGrid: Network;
   Custom: Network;
-  endpoint: string;
-  setEndpoint: Dispatch<SetStateAction<string>>;
+  currentNet: Network;
+  setCurrentNet: Dispatch<SetStateAction<Network>>;
   walletAccount: string;
   setWalletAccount: Dispatch<SetStateAction<string>>;
 };
@@ -35,7 +36,7 @@ export function PageProvider({ children }: PageProviderProps) {
   };
   const Custom = { label: 'Custom RPC', value: 'https://rpc2.hypergrid.dev' };
 
-  const [endpoint, setEndpoint] = useState(Devnet.value);
+  const [currentNet, setCurrentNet] = useState(Devnet);
   const [walletAccount, setWalletAccount] = useState('');
 
   const contextValue: PageContextType = {
@@ -44,8 +45,8 @@ export function PageProvider({ children }: PageProviderProps) {
     Mainnet,
     HyperGrid,
     Custom,
-    endpoint,
-    setEndpoint,
+    currentNet,
+    setCurrentNet,
     walletAccount,
     setWalletAccount
   };

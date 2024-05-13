@@ -12,8 +12,8 @@ export function BorderAngular() {
 import { usePageContext } from '../context';
 
 export function NetworkRequire() {
-  const { Devnet, HyperGrid, Custom, endpoint } = usePageContext();
-  if (endpoint === Devnet.value || endpoint === HyperGrid.value) {
+  const { Devnet, HyperGrid, Custom, currentNet } = usePageContext();
+  if (currentNet.value === Devnet.value || currentNet.value === HyperGrid.value) {
     return <>{HyperGrid.label}</>;
   } else {
     return <>{Custom.value}</>;

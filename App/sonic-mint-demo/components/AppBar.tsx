@@ -22,7 +22,7 @@ import { useRouter } from 'next/router';
 
 export const AppBar = () => {
   const router = useRouter();
-  const { Devnet, Testnet, Mainnet, HyperGrid, Custom, endpoint, setEndpoint, setWalletAccount } = usePageContext();
+  const { Devnet, HyperGrid, Custom, currentNet, setCurrentNet, setWalletAccount } = usePageContext();
   const anchorWallet = useAnchorWallet();
   const wallet = useWallet();
   const { connection } = useConnection();
@@ -33,8 +33,8 @@ export const AppBar = () => {
   const [showCustomBtn, setShowCustomBtn] = useState(false);
 
   useEffect(() => {
-    const endpoint_ = localStorage.getItem('endpoint');
-    if (endpoint_) setEndpoint(endpoint_);
+    const currentNet_ = localStorage.getItem('currentNet');
+    if (currentNet_) setCurrentNet(JSON.parse(currentNet_));
   }, []);
 
   useEffect(() => {
@@ -49,24 +49,24 @@ export const AppBar = () => {
   }, [wallet]);
 
   useEffect(() => {
-    if (!endpoint) return;
-    const isNetworks = networks.find((network) => network.value == endpoint);
+    if (!currentNet) return;
+    const isNetworks = networks.find((network) => network.value == currentNet.value);
     if (!isNetworks) setShowCustomBtn(true);
 
     if (!anchorWallet) return;
-    const provider = new anchor.AnchorProvider(new Connection(endpoint), anchorWallet, {});
+    const provider = new anchor.AnchorProvider(new Connection(currentNet.value), anchorWallet, {});
     anchor.setProvider(provider);
-  }, [endpoint, anchorWallet]);
+  }, [currentNet, anchorWallet]);
 
-  const selectRpc = async (value) => {
+  const selectNet = async (value) => {
     if (value) {
       setShowCustomBtn(false);
-      setEndpoint(value);
-      localStorage.setItem('endpoint', value);
+      setCurrentNet(value);
+      localStorage.setItem('currentNet', JSON.stringify(value));
     } else {
       setShowCustomBtn(true);
-      setEndpoint(Custom.value);
-      localStorage.setItem('endpoint', Custom.value);
+      setCurrentNet(Custom);
+      localStorage.setItem('currentNet', JSON.stringify(Custom));
     }
   };
 
@@ -83,9 +83,16 @@ export const AppBar = () => {
       </div>
 
       <div className="selectnetwork">
+        {currentNet.faucet && (
+          <Button bg="#2828b2">
+            <Link href={currentNet.faucet}>Faucet</Link>
+          </Button>
+        )}
+
         <Button ref={btnRef} bg="#2828b2" onClick={onOpen}>
-          {networks.find((network) => network.value == endpoint)?.label || endpoint}
+          {currentNet.faucet ? currentNet.label : currentNet.value}
         </Button>
+
         <WalletMultiButton />
 
         <Drawer isOpen={isOpen} placement="right" onClose={onClose} finalFocusRef={btnRef}>
@@ -99,16 +106,20 @@ export const AppBar = () => {
                 <div key={index}>
                   <Button
                     width="100%"
-                    bg={endpoint == item.value ? '#2828b2' : ''}
+                    bg={item.value == currentNet.value ? '#2828b2' : ''}
                     variant="outline"
-                    onClick={() => selectRpc(item.value)}>
+                    onClick={() => selectNet(item)}>
                     {item.label}
                   </Button>
                   <br />
                   <br />
                 </div>
               ))}
-              <Button width="100%" variant="outline" bg={showCustomBtn ? '#2828b2' : ''} onClick={() => selectRpc('')}>
+              <Button
+                width="100%"
+                variant="outline"
+                bg={showCustomBtn ? '#2828b2' : ''}
+                onClick={() => selectNet(null)}>
                 {Custom.label}
               </Button>
               <br />
@@ -116,10 +127,11 @@ export const AppBar = () => {
               {showCustomBtn && (
                 <div>
                   <Input
-                    value={endpoint}
+                    value={Custom.value}
                     onChange={(e) => {
-                      setEndpoint(e.target.value);
-                      localStorage.setItem('endpoint', e.target.value);
+                      const net = { ...Custom, value: e.target.value };
+                      setCurrentNet(net);
+                      localStorage.setItem('currentNet', JSON.stringify(net));
                     }}
                   />
                 </div>
