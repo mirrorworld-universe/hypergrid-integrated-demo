@@ -1,7 +1,7 @@
 import { FC, useState, useEffect, useRef } from 'react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { usePageContext } from '../context';
-import { useConnection, useWallet, useAnchorWallet } from '@solana/wallet-adapter-react';
+import { useConnection, useAnchorWallet } from '@solana/wallet-adapter-react';
 import * as anchor from '@project-serum/anchor';
 import { Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import utils from '../utils';
@@ -15,22 +15,23 @@ import {
   DrawerCloseButton,
   Input,
   useDisclosure,
-  Button
+  Button,
+  Tooltip
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 export const AppBar = () => {
   const router = useRouter();
-  const { Devnet, HyperGrid, Custom, currentNet, setCurrentNet, setWalletAccount } = usePageContext();
+  const { Devnet, HyperGrid, Custom, currentNet, setCurrentNet, solBalance, setSolBalance } = usePageContext();
   const anchorWallet = useAnchorWallet();
-  const wallet = useWallet();
   const { connection } = useConnection();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef();
   const networks = [Devnet, HyperGrid];
   const [showCustomBtn, setShowCustomBtn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const currentNet_ = localStorage.getItem('currentNet');
@@ -38,37 +39,49 @@ export const AppBar = () => {
   }, []);
 
   useEffect(() => {
-    if (!wallet.connected) return;
-    setWalletAccount(wallet.publicKey.toBase58());
-
-    // connection.getAccountInfo(wallet.publicKey).then((info) => {
-    //   if (info) {
-    //     console.log('Balance', info.lamports / LAMPORTS_PER_SOL);
-    //   }
-    // });
-  }, [wallet]);
-
-  useEffect(() => {
-    if (!currentNet) return;
+    if (!currentNet.value) return;
     const isNetworks = networks.find((network) => network.value == currentNet.value);
     if (!isNetworks) setShowCustomBtn(true);
 
+    console.log('anchorWallet', anchorWallet);
     if (!anchorWallet) return;
+    console.log('anchorWallet.publicKey', anchorWallet.publicKey.toBase58());
+
     const provider = new anchor.AnchorProvider(new Connection(currentNet.value), anchorWallet, {});
     anchor.setProvider(provider);
+
+    getBalance();
   }, [currentNet, anchorWallet]);
 
-  const selectNet = async (value) => {
+  async function getBalance() {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const balanceRes = await connection.getBalance(anchorWallet.publicKey);
+      console.log('balance', balanceRes);
+      setIsLoading(false);
+      if (!balanceRes) return setSolBalance(0);
+      const balance = balanceRes / LAMPORTS_PER_SOL;
+      setSolBalance(balance);
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+      setSolBalance(0);
+    }
+  }
+
+  function selectNet(value) {
     if (value) {
       setShowCustomBtn(false);
       setCurrentNet(value);
       localStorage.setItem('currentNet', JSON.stringify(value));
+      onClose();
     } else {
       setShowCustomBtn(true);
       setCurrentNet(Custom);
       localStorage.setItem('currentNet', JSON.stringify(Custom));
     }
-  };
+  }
 
   return (
     <div className="AppHeader">
@@ -92,6 +105,12 @@ export const AppBar = () => {
         <Button ref={btnRef} bg="#2828b2" onClick={onOpen}>
           {currentNet.faucet ? currentNet.label : currentNet.value}
         </Button>
+
+        <Tooltip placement="bottom" label="Click to refresh balance">
+          <Button bg="#2828b2" isLoading={isLoading} onClick={getBalance}>
+            SOL: {utils.formatNumber(solBalance, 2)}
+          </Button>
+        </Tooltip>
 
         <WalletMultiButton />
 

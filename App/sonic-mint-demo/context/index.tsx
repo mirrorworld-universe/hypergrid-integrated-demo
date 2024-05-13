@@ -15,8 +15,8 @@ type PageContextType = {
   Custom: Network;
   currentNet: Network;
   setCurrentNet: Dispatch<SetStateAction<Network>>;
-  walletAccount: string;
-  setWalletAccount: Dispatch<SetStateAction<string>>;
+  solBalance: number;
+  setSolBalance: Dispatch<SetStateAction<number>>;
 };
 
 const Context = createContext<PageContextType | undefined>(undefined);
@@ -37,7 +37,7 @@ export function PageProvider({ children }: PageProviderProps) {
   const Custom = { label: 'Custom RPC', value: 'https://rpc2.hypergrid.dev' };
 
   const [currentNet, setCurrentNet] = useState(Devnet);
-  const [walletAccount, setWalletAccount] = useState('');
+  const [solBalance, setSolBalance] = useState(0);
 
   const contextValue: PageContextType = {
     Devnet,
@@ -47,8 +47,8 @@ export function PageProvider({ children }: PageProviderProps) {
     Custom,
     currentNet,
     setCurrentNet,
-    walletAccount,
-    setWalletAccount
+    solBalance,
+    setSolBalance
   };
 
   return <Context.Provider value={contextValue}>{children}</Context.Provider>;

@@ -19,16 +19,17 @@ import {
   ModalCloseButton,
   useDisclosure
 } from '@chakra-ui/react';
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import * as anchor from '@project-serum/anchor';
 import { BN } from '@project-serum/anchor';
 
 export default function Write() {
   const toast = useToast();
+  const anchorWallet = useAnchorWallet();
 
   const { isOpen: isOpenUpgradeSuccess, onOpen: openUpgradeSuccess, onClose: closeUpgradeSuccess } = useDisclosure();
   const { isOpen: isOpenMintSuccess, onOpen: openMintSuccess, onClose: closeMintSuccess } = useDisclosure();
-  const { Devnet, currentNet, walletAccount } = usePageContext();
+  const { Devnet, currentNet } = usePageContext();
 
   const steps = [1, 2, 3, 4, 5];
   const steps2 = [1, 2, 3, 4];
@@ -61,7 +62,7 @@ export default function Write() {
   // }, [currentNet]);
 
   function toConfirm() {
-    if (!walletAccount) return toast({ title: 'Connect wallet', status: 'warning' });
+    if (!anchorWallet || !anchorWallet.publicKey) return toast({ title: 'Connect wallet', status: 'warning' });
 
     if (stepIndex > 2) {
       if (currentNet.value == Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
