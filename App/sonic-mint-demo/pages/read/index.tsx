@@ -34,6 +34,9 @@ import {
 } from '@metaplex-foundation/mpl-token-metadata';
 import { TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
+import { TransactionInstruction, Transaction, PublicKey } from '@solana/web3.js';
+const BufferLayout = require('@solana/buffer-layout');
+
 export default function Read() {
   const toast = useToast();
 
@@ -176,6 +179,19 @@ export default function Read() {
     }, 1000);
   }
 
+  function createInstructionData(index) {
+    const dataLayout = BufferLayout.struct([
+      BufferLayout.u32('instruction')
+    ]);
+
+    const data = Buffer.alloc(dataLayout.span);
+    dataLayout.encode({
+      instruction: index
+    }, data);
+
+    return data;
+  };
+
   async function syncRequest() {
     if (isLoading) return;
     setIsLoading(true);
@@ -183,13 +199,27 @@ export default function Read() {
       const syncProgramId = 'SonicAccountMigrater11111111111111111111111';
       const syncProgram = new anchor.Program(migrateridl as anchor.Idl, syncProgramId);
 
-      const tx = await syncProgram.methods
-        .migrateremoteaccounts()
-        .accounts({
-          programid: mintProgramId
-        })
-        .rpc();
+      // const tx = await syncProgram.methods
+      //   .migrateremoteaccounts()
+      //   .accounts({
+      //     programid: mintProgramId
+      //   })
+      //   .rpc();
 
+      const transaction = new Transaction();
+      const instruction1 = new TransactionInstruction({
+        keys: [
+          //{ pubkey: feePayer.publicKey, isSigner: true, isWritable: false },
+          //{ pubkey: greetedAccountPubkey, isSigner: false, isWritable: false },
+          { pubkey: new PublicKey(mintProgramId), isSigner: false, isWritable: false },
+        ],
+        programId: new PublicKey(syncProgramId),
+        data: createInstructionData(0),
+      })
+      transaction.add(instruction1);
+
+      let provider = anchor.getProvider();
+      const tx = await provider.sendAndConfirm(transaction);
       console.log('syncRequest tx', tx);
 
       setIsLoading(false);
