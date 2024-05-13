@@ -27,15 +27,14 @@ export default function Write() {
 
   const { isOpen: isOpenUpgradeSuccess, onOpen: openUpgradeSuccess, onClose: closeUpgradeSuccess } = useDisclosure();
   const { isOpen: isOpenMintSuccess, onOpen: openMintSuccess, onClose: closeMintSuccess } = useDisclosure();
-  const { isOpen: isOpenMintFailure, onOpen: openMintFailure, onClose: closeMintFailure } = useDisclosure();
   const { Devnet, Testnet, Mainnet, HyperGrid, Custom, endpoint, setEndpoint, walletAccount, setWalletAccount } =
     usePageContext();
 
-  const [isLoading, setIsLoading] = useState(false);
   const steps = [1, 2, 3, 4, 5];
   const steps2 = [1, 2, 3, 4];
   const [stepIndex, setStepIndex] = useState(1);
   const [stepIndex2, setStepIndex2] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [syncStatus, setSyncStatus] = useState(false);
   const [unlockStatus, setUnlockStatus] = useState(false);
   const [lockStatus, setLockStatus] = useState(false);
@@ -56,6 +55,12 @@ export default function Write() {
     // image: 'https://bafybeigrhybzerxl2ey63bfhy4dz6r47m52mvs37w7jimsnccdmieilrxa.ipfs.nftstorage.link/2.jpg',
     // level: 1
   });
+
+  // useEffect(() => {
+  //   console.log('stepIndex', stepIndex);
+  //   console.log('endpoint', endpoint);
+  //   openMintSuccess();
+  // }, [stepIndex]);
 
   function toConfirm() {
     if (!walletAccount) return toast({ title: 'Connect wallet', status: 'warning' });
@@ -156,20 +161,25 @@ export default function Write() {
   }
 
   async function getMetadata() {
+    if (isLoading) return;
+    setIsLoading(true);
     try {
       const num = utils.randomNum(1, 5);
       const uri = `https://bafybeieknoava43popez3aroo6umnv24gwy75jfvlcpsoz57ebvqpj5y54.ipfs.nftstorage.link/${num}.json`;
       const response = await axios.get(uri);
       const metadata_ = { ...response.data, uri, level: 1 };
-      console.log('metadata_', metadata_);
       setMetadata(metadata_);
+      setIsLoading(false);
       mintNft(metadata_);
     } catch (error) {
       console.error(error);
+      setIsLoading(false);
+      toast({ title: 'Mint nft failed', status: 'error' });
     }
   }
 
   async function mintNft(metadata: any) {
+    if (isLoading) return;
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
@@ -200,6 +210,7 @@ export default function Write() {
   }
 
   async function upgradeRequest() {
+    if (isLoading) return;
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);

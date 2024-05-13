@@ -42,9 +42,9 @@ export default function Read() {
   const { Devnet, Testnet, Mainnet, HyperGrid, Custom, endpoint, setEndpoint, walletAccount, setWalletAccount } =
     usePageContext();
 
-  const [isLoading, setIsLoading] = useState(false);
   const steps = [1, 2, 3, 4, 5];
   const [stepIndex, setStepIndex] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [syncStatus, setSyncStatus] = useState(false);
   const [mintNftTX, setMintNftTX] = useState('');
 
@@ -87,9 +87,7 @@ export default function Read() {
       closeMintSuccess();
       setStepIndex(3);
     } else if (stepIndex == 3) {
-      closeMintFailure();
-      // checkSyncStatus();
-      setStepIndex(4);
+      checkSyncStatus();
     } else if (stepIndex == 4) {
       closeSyncSuccess();
       setStepIndex(5);
@@ -108,25 +106,26 @@ export default function Read() {
   }
 
   async function getMetadata() {
+    if (isLoading) return;
+    setIsLoading(true);
     try {
       const num = utils.randomNum(1, 5);
       const uri = `https://bafybeieknoava43popez3aroo6umnv24gwy75jfvlcpsoz57ebvqpj5y54.ipfs.nftstorage.link/${num}.json`;
       const response = await axios.get(uri);
       const metadata_ = { ...response.data, uri };
       setMetadata(metadata_);
+      setIsLoading(false);
       mintNft(metadata_);
     } catch (error) {
       console.error(error);
+      setIsLoading(false);
+      toast({ title: 'Mint nft failed', status: 'error' });
     }
   }
 
   async function mintNft(metadata: any) {
+    if (isLoading) return;
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      openMintSuccess();
-    }, 3000);
-    return;
     try {
       let provider: any = anchor.getProvider();
       const signer = provider.wallet;
@@ -158,7 +157,6 @@ export default function Read() {
         .rpc();
 
       console.log(`mint nft tx: https://explorer.solana.com/tx/${tx}?cluster=devnet`);
-      console.log(`mint acount: https://explorer.solana.com/address/${newAccount.publicKey}?cluster=devnet`);
 
       setMintNftTX(`https://explorer.solana.com/tx/${tx}?cluster=devnet`);
 
@@ -172,21 +170,17 @@ export default function Read() {
   }
 
   function againMintNft() {
+    if (isLoading) return;
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
       openMintFailure();
-    }, 3000);
+    }, 1000);
   }
 
   async function syncRequest() {
+    if (isLoading) return;
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setSyncStatus(true);
-      openSyncSuccess();
-    }, 3000);
-    return;
     try {
       const syncProgramId = 'SonicAccountMigrater11111111111111111111111';
       const syncProgram = new anchor.Program(migrateridl as anchor.Idl, syncProgramId);
@@ -211,16 +205,25 @@ export default function Read() {
   }
 
   async function checkSyncStatus() {
-    const res = await utils.apiPost('https://api.devnet.solana.com', {
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'getAccountInfo',
-      params: [mintProgramId, { encoding: 'base58' }]
-    });
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const res = await utils.apiPost('https://api.devnet.solana.com', {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'getAccountInfo',
+        params: [mintProgramId, { encoding: 'base58' }]
+      });
 
-    const syncData = res.result.value;
-    setSyncStatus(syncData ? true : false);
-    setStepIndex(syncData ? 5 : 4);
+      const syncData = res.result.value;
+      setSyncStatus(syncData ? true : false);
+      setStepIndex(syncData ? 5 : 4);
+      setIsLoading(false);
+      closeMintFailure();
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+    }
   }
 
   function getNetworkRequire() {
@@ -417,7 +420,7 @@ export default function Read() {
             <div>The program has not been synchronized yet, mint failed.</div>
           </ModalBody>
           <ModalFooter>
-            <Button bg="#2828b2" onClick={modalToConfirm}>
+            <Button bg="#2828b2" isLoading={isLoading} onClick={modalToConfirm}>
               Confirm
             </Button>
           </ModalFooter>
