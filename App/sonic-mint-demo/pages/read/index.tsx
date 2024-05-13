@@ -187,7 +187,7 @@ export default function Read() {
       const syncProgram = new anchor.Program(migrateridl as anchor.Idl, syncProgramId);
 
       const tx = await syncProgram.methods
-        .MigrateRemoteAccounts()
+        .migrateremoteaccounts()
         .accounts({
           programid: syncProgramId
         })
