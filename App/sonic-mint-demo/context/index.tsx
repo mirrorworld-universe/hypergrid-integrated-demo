@@ -17,6 +17,8 @@ type PageContextType = {
   setCurrentNet: Dispatch<SetStateAction<Network>>;
   walletAccount: string;
   setWalletAccount: Dispatch<SetStateAction<string>>;
+  solBalance: number;
+  setSolBalance: Dispatch<SetStateAction<number>>;
 };
 
 const Context = createContext<PageContextType | undefined>(undefined);
@@ -38,6 +40,7 @@ export function PageProvider({ children }: PageProviderProps) {
 
   const [currentNet, setCurrentNet] = useState(Devnet);
   const [walletAccount, setWalletAccount] = useState('');
+  const [solBalance, setSolBalance] = useState(0);
 
   const contextValue: PageContextType = {
     Devnet,
@@ -48,7 +51,9 @@ export function PageProvider({ children }: PageProviderProps) {
     currentNet,
     setCurrentNet,
     walletAccount,
-    setWalletAccount
+    setWalletAccount,
+    solBalance,
+    setSolBalance
   };
 
   return <Context.Provider value={contextValue}>{children}</Context.Provider>;
