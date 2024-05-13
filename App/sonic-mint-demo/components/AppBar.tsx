@@ -1,7 +1,7 @@
 import { FC, useState, useEffect, useRef } from 'react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { usePageContext } from '../context';
-import { useConnection, useWallet, useAnchorWallet } from '@solana/wallet-adapter-react';
+import { useConnection, useAnchorWallet } from '@solana/wallet-adapter-react';
 import * as anchor from '@project-serum/anchor';
 import { Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import utils from '../utils';
@@ -23,10 +23,8 @@ import { useRouter } from 'next/router';
 
 export const AppBar = () => {
   const router = useRouter();
-  const { Devnet, HyperGrid, Custom, currentNet, setCurrentNet, setWalletAccount, solBalance, setSolBalance } =
-    usePageContext();
+  const { Devnet, HyperGrid, Custom, currentNet, setCurrentNet, solBalance, setSolBalance } = usePageContext();
   const anchorWallet = useAnchorWallet();
-  const wallet = useWallet();
   const { connection } = useConnection();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -41,33 +39,30 @@ export const AppBar = () => {
   }, []);
 
   useEffect(() => {
-    if (!wallet.connected) return;
-    setWalletAccount(wallet.publicKey.toBase58());
-    console.log('currentNet', currentNet.value);
-    if (currentNet.faucet) {
-      getBalance();
-    }
-  }, [wallet]);
-
-  useEffect(() => {
     if (!currentNet.value) return;
     const isNetworks = networks.find((network) => network.value == currentNet.value);
     if (!isNetworks) setShowCustomBtn(true);
+
+    console.log('anchorWallet', anchorWallet);
     if (!anchorWallet) return;
+    console.log('anchorWallet.publicKey', anchorWallet.publicKey.toBase58());
+
     const provider = new anchor.AnchorProvider(new Connection(currentNet.value), anchorWallet, {});
     anchor.setProvider(provider);
+
+    getBalance();
   }, [currentNet, anchorWallet]);
 
   async function getBalance() {
     if (isLoading) return;
     setIsLoading(true);
     try {
-      const balanceRes = await connection.getBalance(wallet.publicKey);
+      const balanceRes = await connection.getBalance(anchorWallet.publicKey);
       console.log('balance', balanceRes);
+      setIsLoading(false);
       if (!balanceRes) return setSolBalance(0);
       const balance = balanceRes / LAMPORTS_PER_SOL;
       setSolBalance(balance);
-      setIsLoading(false);
     } catch (error) {
       console.error(error);
       setIsLoading(false);
