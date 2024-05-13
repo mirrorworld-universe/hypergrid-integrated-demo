@@ -43,6 +43,7 @@ export const AppBar = () => {
   useEffect(() => {
     if (!wallet.connected) return;
     setWalletAccount(wallet.publicKey.toBase58());
+    console.log('currentNet', currentNet.value);
     if (currentNet.faucet) {
       getBalance();
     }
@@ -61,13 +62,12 @@ export const AppBar = () => {
     if (isLoading) return;
     setIsLoading(true);
     try {
-      const info = await connection.getAccountInfo(wallet.publicKey);
-      console.log('info', info);
-      setIsLoading(false);
-      if (!info) return setSolBalance(0);
-      const balance = info.lamports / LAMPORTS_PER_SOL;
-      console.log('Balance', balance);
+      const balanceRes = await connection.getBalance(wallet.publicKey);
+      console.log('balance', balanceRes);
+      if (!balanceRes) return setSolBalance(0);
+      const balance = balanceRes / LAMPORTS_PER_SOL;
       setSolBalance(balance);
+      setIsLoading(false);
     } catch (error) {
       console.error(error);
       setIsLoading(false);
@@ -80,6 +80,7 @@ export const AppBar = () => {
       setShowCustomBtn(false);
       setCurrentNet(value);
       localStorage.setItem('currentNet', JSON.stringify(value));
+      onClose();
     } else {
       setShowCustomBtn(true);
       setCurrentNet(Custom);
