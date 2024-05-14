@@ -23,8 +23,8 @@ export default function App({ Component, pageProps }: AppProps) {
           <script src="/js/three.min.js" />
           <script src="/js/vanta.dots.min.js" />
           <AppBar />
+          <VantaDots />
           <div className="AppBody">
-            <VantaDots />
             <Component {...pageProps} />
           </div>
         </WalletContextProvider>

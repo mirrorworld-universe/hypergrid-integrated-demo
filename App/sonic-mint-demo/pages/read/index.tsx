@@ -288,6 +288,9 @@ export default function Read() {
 
   return (
     <>
+      <div className="page_title">
+        Ability to sync NFT programs from Solana Devnet to Hypergrid and verify sync status
+      </div>
       <div className="stages">
         {steps.map((step) => (
           <div

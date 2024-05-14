@@ -226,6 +226,7 @@ export default function Write() {
 
   return (
     <>
+      <div className="page_title">Sync and modify the Solana Devnet NFT program on Hypergrid</div>
       <div className="stages">
         {steps.map((step) => (
           <div
