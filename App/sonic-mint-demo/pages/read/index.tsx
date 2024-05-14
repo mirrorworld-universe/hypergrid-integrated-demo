@@ -151,17 +151,15 @@ export default function Read() {
         rent: anchor.web3.SYSVAR_RENT_PUBKEY
       };
 
-      console.log('initdata', initdata);
-
       const tx = await program.methods
         .initNft(metadata.name, metadata.symbol, metadata.uri)
         .accounts(initdata)
         .signers([newAccount])
         .rpc();
 
-      const mintTx = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
-      console.log(`mint nft tx: `, mintTx);
-      setMintNftTX(mintTx);
+      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      console.log(`mint nft tx: `, txhash);
+      setMintNftTX(txhash);
 
       setIsLoading(false);
       openMintSuccess();

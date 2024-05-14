@@ -147,8 +147,6 @@ export default function Write() {
   }
 
   function generateAccount() {
-    setStepIndex(2);
-    return;
     if (!mintProgramId) return toast({ title: 'Fill in the Devnet program ID', status: 'warning' });
 
     const program = new anchor.Program(hgnft as anchor.Idl, mintProgramId);
@@ -180,24 +178,16 @@ export default function Write() {
   async function mintNft(metadata: any) {
     if (isLoading) return;
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      openMintSuccess();
-    }, 3000);
-    return;
     try {
       const tx = await mintProgram.methods
         .mintnft(metadata.name, metadata.uri, new BN(metadata.level))
-        .accounts({
-          mint: newAccount.publicKey
-        })
+        .accounts({ mint: newAccount.publicKey })
         .signers([newAccount])
         .rpc();
 
-      console.log(`mint nft tx: https://explorer.solana.com/tx/${tx}?cluster=devnet`);
-      console.log(`mint acount: https://explorer.solana.com/address/${newAccount.publicKey}?cluster=devnet`);
-
-      setMintNftTX(`https://explorer.solana.com/tx/${tx}?cluster=devnet`);
+      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      console.log(`mint nft tx: `, txhash);
+      setMintNftTX(txhash);
 
       setIsLoading(false);
       openMintSuccess();
@@ -209,16 +199,11 @@ export default function Write() {
   }
 
   async function upgradeRequest() {
+    return;
     if (isLoading) return;
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      openUpgradeSuccess();
-    }, 2000);
-    return;
     try {
       const newLevel = new BN(metadata.level);
-
       const tx = await mintProgram.methods
         .setvalue(newLevel)
         .accounts({
@@ -226,10 +211,9 @@ export default function Write() {
         })
         .rpc();
 
-      console.log(`set value tx: https://explorer.solana.com/tx/${tx}?cluster=devnet`);
-      console.log(`mint acount: https://explorer.solana.com/address/${newAccount.publicKey}?cluster=devnet`);
-
-      setL2SetValueTX(`https://explorer.solana.com/tx/${tx}?cluster=devnet`);
+      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      console.log(`set value tx: `, txhash);
+      setL2SetValueTX(txhash);
 
       setIsLoading(false);
       openUpgradeSuccess();
