@@ -51,6 +51,7 @@ export default function Read() {
   const [isLoading, setIsLoading] = useState(false);
   const [syncStatus, setSyncStatus] = useState(false);
   const [mintNftTX, setMintNftTX] = useState('');
+  const [syncRequestTX, setSyncRequestTX] = useState('');
 
   const [newAccount, setNewAccount] = useState<any>();
   const [mintProgramId, setMintProgramId] = useState(`HdBvhzMrhmdPyrbwL9ZR2ZFqhqVSKcDra7ggdWqCcwps`);
@@ -58,6 +59,7 @@ export default function Read() {
   const syncProgramId = 'SonicAccountMigrater11111111111111111111111';
 
   // useEffect(() => {
+  //   openSyncSuccess();
   //   console.log('currentNet', currentNet);
   // }, [currentNet]);
 
@@ -215,7 +217,9 @@ export default function Read() {
 
       let provider = anchor.getProvider();
       const tx = await provider.sendAndConfirm(transaction);
-      console.log('syncRequest tx', tx);
+      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      console.log(`sync request tx: `, txhash);
+      setSyncRequestTX(txhash);
 
       setIsLoading(false);
       setSyncStatus(true);
@@ -228,6 +232,7 @@ export default function Read() {
   }
 
   async function checkSyncStatus() {
+    if (currentNet.value == Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
     if (isLoading) return;
     setIsLoading(true);
     try {
@@ -295,9 +300,11 @@ export default function Read() {
           </div>
         ))}
       </div>
+
       {/* <Button width="100%" bg="#2828b2" isLoading={isLoading} onClick={clearCache}>
         clear cache
       </Button> */}
+
       {stepIndex == 1 && (
         <div className="rowbox animate__animated animate__zoomIn">
           <BorderAngular />
@@ -489,6 +496,11 @@ export default function Read() {
           <ModalCloseButton />
           <ModalBody>
             <div>Devnet network mint NFT program has been successfully synced to HyperGrid network</div>
+            <div className="linkbox">
+              <Link href={syncRequestTX} isExternal>
+                Sync Request TX
+              </Link>
+            </div>
           </ModalBody>
           <ModalFooter>
             <Button bg="#2828b2" onClick={modalToConfirm}>
