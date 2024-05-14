@@ -54,7 +54,7 @@ export default function Read() {
   const [syncRequestTX, setSyncRequestTX] = useState('');
 
   const [newAccount, setNewAccount] = useState<any>();
-  const [mintProgramId, setMintProgramId] = useState(`HdBvhzMrhmdPyrbwL9ZR2ZFqhqVSKcDra7ggdWqCcwps`);
+  const [mintProgramId, setMintProgramId] = useState(``); //HdBvhzMrhmdPyrbwL9ZR2ZFqhqVSKcDra7ggdWqCcwps
   const [metadata, setMetadata] = useState<any>();
   const syncProgramId = 'SonicAccountMigrater11111111111111111111111';
 

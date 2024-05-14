@@ -77,6 +77,27 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "fakesetvalue",
+      "accounts": [
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "level",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [

@@ -22,6 +22,15 @@ import {
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import * as anchor from '@project-serum/anchor';
 import { BN } from '@project-serum/anchor';
+import {
+  findMasterEditionPda,
+  findMetadataPda,
+  mplTokenMetadata,
+  MPL_TOKEN_METADATA_PROGRAM_ID
+} from '@metaplex-foundation/mpl-token-metadata';
+
+import { TransactionInstruction, Transaction, PublicKey } from '@solana/web3.js';
+const BufferLayout = require('@solana/buffer-layout');
 
 export default function Write() {
   const toast = useToast();
@@ -56,6 +65,7 @@ export default function Write() {
     image: 'https://bafybeigrhybzerxl2ey63bfhy4dz6r47m52mvs37w7jimsnccdmieilrxa.ipfs.nftstorage.link/2.jpg',
     level: 1
   });
+  const syncProgramId = 'SonicAccountMigrater11111111111111111111111';
 
   // useEffect(() => {
   //   console.log('currentNet', currentNet);
@@ -177,6 +187,7 @@ export default function Write() {
 
   async function mintNft(metadata: any) {
     if (isLoading) return;
+    console.log('metadata', metadata);
     setIsLoading(true);
     try {
       const tx = await mintProgram.methods
@@ -199,21 +210,36 @@ export default function Write() {
   }
 
   async function upgradeRequest() {
-    return;
     if (isLoading) return;
     setIsLoading(true);
     try {
-      const newLevel = new BN(metadata.level);
-      const tx = await mintProgram.methods
-        .setvalue(newLevel)
-        .accounts({
-          mint: newAccount.publicKey
-        })
-        .rpc();
+      // const newLevel = new BN(metadata.level);
+      // const tx = await mintProgram.methods
+      //   .setvalue(newLevel)
+      //   .accounts({
+      //     mint: newAccount.publicKey
+      //   })
+      //   .rpc();
 
+      // const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      // console.log(`set value tx: `, txhash);
+      // setL2SetValueTX(txhash);
+
+      const transaction = new Transaction();
+      const instruction1 = new TransactionInstruction({
+        keys: [
+          { pubkey: new PublicKey(mintProgramId), isSigner: false, isWritable: false },
+          { pubkey: new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID), isSigner: false, isWritable: false }
+        ],
+        programId: new PublicKey(syncProgramId),
+        data: createInstructionData(0)
+      });
+      transaction.add(instruction1);
+
+      let provider = anchor.getProvider();
+      const tx = await provider.sendAndConfirm(transaction);
       const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
-      console.log(`set value tx: `, txhash);
-      setL2SetValueTX(txhash);
+      console.log(`sync request tx: `, txhash);
 
       setIsLoading(false);
       openUpgradeSuccess();
@@ -222,6 +248,13 @@ export default function Write() {
       setIsLoading(false);
       toast({ title: 'Upgrade failed', status: 'error' });
     }
+  }
+
+  function createInstructionData(index) {
+    const dataLayout = BufferLayout.struct([BufferLayout.u32('instruction')]);
+    const data = Buffer.alloc(dataLayout.span);
+    dataLayout.encode({ instruction: index }, data);
+    return data;
   }
 
   return (
