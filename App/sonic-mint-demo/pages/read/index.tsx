@@ -54,7 +54,6 @@ export default function Read() {
 
   const [newAccount, setNewAccount] = useState<any>();
   const [mintProgramId, setMintProgramId] = useState(`HdBvhzMrhmdPyrbwL9ZR2ZFqhqVSKcDra7ggdWqCcwps`);
-  const [mintProgram, setMintProgram] = useState<anchor.Program>();
   const [metadata, setMetadata] = useState<any>();
 
   // useEffect(() => {
@@ -102,8 +101,6 @@ export default function Read() {
     if (!mintProgramId) return toast({ title: 'Fill in the Devnet program ID', status: 'warning' });
     const newAccount_ = anchor.web3.Keypair.generate();
     setNewAccount(newAccount_);
-    const program = new anchor.Program(idl as anchor.Idl, mintProgramId);
-    setMintProgram(program);
     setStepIndex(2);
   }
 
@@ -129,9 +126,17 @@ export default function Read() {
     if (isLoading) return;
     setIsLoading(true);
     try {
+      console.log('endpoint', currentNet.value);
+      console.log('mintProgramId', mintProgramId);
+      console.log('newAccount', newAccount.publicKey.toBase58());
+
       let provider: any = anchor.getProvider();
+      console.log('provider', provider);
+      const program = new anchor.Program(idl as anchor.Idl, mintProgramId);
+      console.log('program', program);
       const signer = provider.wallet;
       const umi = createUmi(currentNet.value).use(walletAdapterIdentity(signer)).use(mplTokenMetadata());
+      console.log('umi', umi);
       const associatedTokenAccount = await getAssociatedTokenAddress(newAccount.publicKey, signer.publicKey);
       let metadataAccount = findMetadataPda(umi, {
         mint: publicKey(newAccount.publicKey)
@@ -152,7 +157,9 @@ export default function Read() {
         rent: anchor.web3.SYSVAR_RENT_PUBKEY
       };
 
-      const tx = await mintProgram.methods
+      console.log('initdata', initdata);
+
+      const tx = await program.methods
         .initNft(metadata.name, metadata.symbol, metadata.uri)
         .accounts(initdata)
         .signers([newAccount])
@@ -181,17 +188,18 @@ export default function Read() {
   }
 
   function createInstructionData(index) {
-    const dataLayout = BufferLayout.struct([
-      BufferLayout.u32('instruction')
-    ]);
+    const dataLayout = BufferLayout.struct([BufferLayout.u32('instruction')]);
 
     const data = Buffer.alloc(dataLayout.span);
-    dataLayout.encode({
-      instruction: index
-    }, data);
+    dataLayout.encode(
+      {
+        instruction: index
+      },
+      data
+    );
 
     return data;
-  };
+  }
 
   async function syncRequest() {
     if (isLoading) return;
@@ -212,14 +220,14 @@ export default function Read() {
         keys: [
           //{ pubkey: feePayer.publicKey, isSigner: true, isWritable: false },
           //{ pubkey: greetedAccountPubkey, isSigner: false, isWritable: false },
-          { pubkey: new PublicKey(mintProgramId), isSigner: false, isWritable: false },
+          { pubkey: new PublicKey(mintProgramId), isSigner: false, isWritable: false }
           // { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
           // { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
           // { pubkey: new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID), isSigner: false, isWritable: false },
         ],
         programId: new PublicKey(syncProgramId),
-        data: createInstructionData(0),
-      })
+        data: createInstructionData(0)
+      });
       transaction.add(instruction1);
 
       let provider = anchor.getProvider();
@@ -240,7 +248,7 @@ export default function Read() {
     if (isLoading) return;
     setIsLoading(true);
     try {
-      const res = await utils.apiPost('https://api.devnet.solana.com', {
+      const res = await utils.apiPost(currentNet.value, {
         jsonrpc: '2.0',
         id: 1,
         method: 'getAccountInfo',

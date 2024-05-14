@@ -43,9 +43,8 @@ export const AppBar = () => {
     const isNetworks = networks.find((network) => network.value == currentNet.value);
     if (!isNetworks) setShowCustomBtn(true);
 
-    console.log('anchorWallet', anchorWallet);
     if (!anchorWallet) return;
-    console.log('anchorWallet.publicKey', anchorWallet.publicKey.toBase58());
+    // console.log('anchorWallet.publicKey', anchorWallet.publicKey.toBase58());
 
     const provider = new anchor.AnchorProvider(new Connection(currentNet.value), anchorWallet, {});
     anchor.setProvider(provider);
@@ -58,7 +57,7 @@ export const AppBar = () => {
     setIsLoading(true);
     try {
       const balanceRes = await connection.getBalance(anchorWallet.publicKey);
-      console.log('balance', balanceRes);
+      // console.log('balance', balanceRes);
       setIsLoading(false);
       if (!balanceRes) return setSolBalance(0);
       const balance = balanceRes / LAMPORTS_PER_SOL;
