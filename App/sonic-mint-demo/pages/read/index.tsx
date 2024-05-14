@@ -55,6 +55,7 @@ export default function Read() {
   const [newAccount, setNewAccount] = useState<any>();
   const [mintProgramId, setMintProgramId] = useState(`HdBvhzMrhmdPyrbwL9ZR2ZFqhqVSKcDra7ggdWqCcwps`);
   const [metadata, setMetadata] = useState<any>();
+  const syncProgramId = 'SonicAccountMigrater11111111111111111111111';
 
   // useEffect(() => {
   //   console.log('currentNet', currentNet);
@@ -129,7 +130,6 @@ export default function Read() {
       let provider: any = anchor.getProvider();
       const program = new anchor.Program(idl as anchor.Idl, mintProgramId);
       const signer = provider.wallet;
-
       const umi = createUmi(currentNet.value).use(walletAdapterIdentity(signer)).use(mplTokenMetadata());
       const associatedTokenAccount = await getAssociatedTokenAddress(newAccount.publicKey, signer.publicKey);
       let metadataAccount = findMetadataPda(umi, {
@@ -138,6 +138,7 @@ export default function Read() {
       let masterEditionAccount = findMasterEditionPda(umi, {
         mint: publicKey(newAccount.publicKey)
       })[0];
+
       const initdata = {
         signer: provider.publicKey,
         mint: newAccount.publicKey,
@@ -170,13 +171,32 @@ export default function Read() {
     }
   }
 
-  function againMintNft() {
+  async function againMintNft() {
     if (isLoading) return;
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const transaction = new Transaction();
+      const instruction1 = new TransactionInstruction({
+        keys: [
+          { pubkey: new PublicKey(mintProgramId), isSigner: false, isWritable: false },
+          { pubkey: new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID), isSigner: false, isWritable: false }
+        ],
+        programId: new PublicKey(syncProgramId),
+        data: createInstructionData(1)
+      });
+      transaction.add(instruction1);
+
+      let provider = anchor.getProvider();
+      const tx = await provider.sendAndConfirm(transaction);
+      console.log('clear cache', tx);
+
       setIsLoading(false);
+      setSyncStatus(false);
       openMintFailure();
-    }, 1000);
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+    }
   }
 
   function createInstructionData(index) {
@@ -186,13 +206,12 @@ export default function Read() {
     return data;
   }
 
+  // 0 sync , 1 clear cache
   async function syncRequest() {
     if (isLoading) return;
     setIsLoading(true);
     try {
-      const syncProgramId = 'SonicAccountMigrater11111111111111111111111';
       // const syncProgram = new anchor.Program(migrateridl as anchor.Idl, syncProgramId);
-
       // const tx = await syncProgram.methods
       //   .migrateremoteaccounts()
       //   .accounts({
