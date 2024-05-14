@@ -214,13 +214,12 @@ export default function Write() {
     setIsLoading(true);
     try {
       // const newLevel = new BN(metadata.level);
-      // const tx = await mintProgram.methods
-      //   .setvalue(newLevel)
+      // const tx2 = await mintProgram.methods
+      //   .fakesetvalue(newLevel)
       //   .accounts({
       //     mint: newAccount.publicKey
       //   })
       //   .rpc();
-
       // const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
       // console.log(`set value tx: `, txhash);
       // setL2SetValueTX(txhash);

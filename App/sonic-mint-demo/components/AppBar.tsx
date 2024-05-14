@@ -97,7 +97,9 @@ export const AppBar = () => {
       <div className="selectnetwork">
         {currentNet.faucet && (
           <Button bg="#2828b2">
-            <Link href={currentNet.faucet}>Faucet</Link>
+            <a href={currentNet.faucet} target="_blank" rel="noopener noreferrer">
+              Faucet
+            </a>
           </Button>
         )}
 
