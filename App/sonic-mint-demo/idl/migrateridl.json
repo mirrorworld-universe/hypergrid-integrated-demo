@@ -3,14 +3,21 @@
   "name": "SonicAccountMigrater",
   "instructions": [
     {
-      "name": "MigrateRemoteAccounts",
+      "name": "migrateremoteaccounts",
       "accounts": [
-        { "name": "programid", "isMut": false, "isSigner": false },
-        { "name": "user", "isMut": false, "isSigner": true }
+        {
+          "name": "programid",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        }
       ],
       "args": []
     }
   ],
-  "accounts": [
-  ]
+  "accounts": []
 }

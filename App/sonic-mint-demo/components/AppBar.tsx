@@ -1,7 +1,7 @@
 import { FC, useState, useEffect, useRef } from 'react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { usePageContext } from '../context';
-import { useConnection, useWallet, useAnchorWallet } from '@solana/wallet-adapter-react';
+import { useConnection, useAnchorWallet } from '@solana/wallet-adapter-react';
 import * as anchor from '@project-serum/anchor';
 import { Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import utils from '../utils';
@@ -15,55 +15,72 @@ import {
   DrawerCloseButton,
   Input,
   useDisclosure,
-  Button
+  Button,
+  Tooltip
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 export const AppBar = () => {
   const router = useRouter();
-  const { Devnet, Testnet, Mainnet, HyperGrid, Custom, endpoint, setEndpoint, setWalletAccount } = usePageContext();
+  const { Devnet, HyperGrid, Custom, currentNet, setCurrentNet, solBalance, setSolBalance } = usePageContext();
   const anchorWallet = useAnchorWallet();
-  const wallet = useWallet();
   const { connection } = useConnection();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef();
   const networks = [Devnet, HyperGrid];
   const [showCustomBtn, setShowCustomBtn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!wallet.connected) return;
-    setWalletAccount(wallet.publicKey.toBase58());
-
-    // connection.getAccountInfo(wallet.publicKey).then((info) => {
-    //   if (info) {
-    //     console.log('Balance', info.lamports / LAMPORTS_PER_SOL);
-    //   }
-    // });
-  }, [wallet]);
+    const currentNet_ = localStorage.getItem('currentNet');
+    if (currentNet_) setCurrentNet(JSON.parse(currentNet_));
+  }, []);
 
   useEffect(() => {
-    if (!endpoint || !anchorWallet) return;
-    const isNetworks = networks.find((network) => network.value == endpoint);
+    if (!currentNet.value) return;
+    const isNetworks = networks.find((network) => network.value == currentNet.value);
     if (!isNetworks) setShowCustomBtn(true);
 
-    const provider = new anchor.AnchorProvider(new Connection(endpoint), anchorWallet, {});
-    anchor.setProvider(provider);
-    // console.log('provider', provider);
-  }, [endpoint, anchorWallet]);
+    if (!anchorWallet) return;
+    // console.log('anchorWallet.publicKey', anchorWallet.publicKey.toBase58());
 
-  const selectRpc = async (value) => {
+    const provider = new anchor.AnchorProvider(new Connection(currentNet.value), anchorWallet, {});
+    anchor.setProvider(provider);
+
+    getBalance();
+  }, [currentNet, anchorWallet]);
+
+  async function getBalance() {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const balanceRes = await connection.getBalance(anchorWallet.publicKey);
+      // console.log('balance', balanceRes);
+      setIsLoading(false);
+      if (!balanceRes) return setSolBalance(0);
+      const balance = balanceRes / LAMPORTS_PER_SOL;
+      setSolBalance(balance);
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+      setSolBalance(0);
+    }
+  }
+
+  function selectNet(value) {
     if (value) {
       setShowCustomBtn(false);
-      setEndpoint(value);
-      localStorage.setItem('endpoint', value);
+      setCurrentNet(value);
+      localStorage.setItem('currentNet', JSON.stringify(value));
+      onClose();
     } else {
       setShowCustomBtn(true);
-      setEndpoint(Custom.value);
-      localStorage.setItem('endpoint', Custom.value);
+      setCurrentNet(Custom);
+      localStorage.setItem('currentNet', JSON.stringify(Custom));
     }
-  };
+  }
 
   return (
     <div className="AppHeader">
@@ -78,9 +95,22 @@ export const AppBar = () => {
       </div>
 
       <div className="selectnetwork">
+        {currentNet.faucet && (
+          <Button bg="#2828b2">
+            <Link href={currentNet.faucet}>Faucet</Link>
+          </Button>
+        )}
+
         <Button ref={btnRef} bg="#2828b2" onClick={onOpen}>
-          {networks.find((network) => network.value == endpoint)?.label || endpoint}
+          {currentNet.faucet ? currentNet.label : currentNet.value}
         </Button>
+
+        <Tooltip placement="bottom" label="Click to refresh balance">
+          <Button bg="#2828b2" isLoading={isLoading} onClick={getBalance}>
+            SOL: {utils.formatNumber(solBalance, 2)}
+          </Button>
+        </Tooltip>
+
         <WalletMultiButton />
 
         <Drawer isOpen={isOpen} placement="right" onClose={onClose} finalFocusRef={btnRef}>
@@ -94,16 +124,20 @@ export const AppBar = () => {
                 <div key={index}>
                   <Button
                     width="100%"
-                    bg={endpoint == item.value ? '#2828b2' : ''}
+                    bg={item.value == currentNet.value ? '#2828b2' : ''}
                     variant="outline"
-                    onClick={() => selectRpc(item.value)}>
+                    onClick={() => selectNet(item)}>
                     {item.label}
                   </Button>
                   <br />
                   <br />
                 </div>
               ))}
-              <Button width="100%" variant="outline" bg={showCustomBtn ? '#2828b2' : ''} onClick={() => selectRpc('')}>
+              <Button
+                width="100%"
+                variant="outline"
+                bg={showCustomBtn ? '#2828b2' : ''}
+                onClick={() => selectNet(null)}>
                 {Custom.label}
               </Button>
               <br />
@@ -111,10 +145,11 @@ export const AppBar = () => {
               {showCustomBtn && (
                 <div>
                   <Input
-                    value={endpoint}
+                    value={Custom.value}
                     onChange={(e) => {
-                      setEndpoint(e.target.value);
-                      localStorage.setItem('endpoint', e.target.value);
+                      const net = { ...Custom, value: e.target.value };
+                      setCurrentNet(net);
+                      localStorage.setItem('currentNet', JSON.stringify(net));
                     }}
                   />
                 </div>

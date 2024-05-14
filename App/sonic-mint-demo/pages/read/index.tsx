@@ -4,6 +4,7 @@ import { usePageContext } from '../../context';
 import utils from '../../utils';
 import idl from '../../idl/idl.json';
 import migrateridl from '../../idl/migrateridl.json';
+import { BorderAngular, NetworkRequire } from '../../components/Component';
 import { PhoneIcon, AddIcon, WarningIcon } from '@chakra-ui/icons';
 import {
   Button,
@@ -19,7 +20,7 @@ import {
   ModalCloseButton,
   useDisclosure
 } from '@chakra-ui/react';
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import * as anchor from '@project-serum/anchor';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { publicKey } from '@metaplex-foundation/umi';
@@ -33,39 +34,42 @@ import {
 } from '@metaplex-foundation/mpl-token-metadata';
 import { TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
+import { TransactionInstruction, Transaction, PublicKey } from '@solana/web3.js';
+const BufferLayout = require('@solana/buffer-layout');
+
 export default function Read() {
   const toast = useToast();
+  const anchorWallet = useAnchorWallet();
 
   const { isOpen: isOpenMintSuccess, onOpen: openMintSuccess, onClose: closeMintSuccess } = useDisclosure();
   const { isOpen: isOpenMintFailure, onOpen: openMintFailure, onClose: closeMintFailure } = useDisclosure();
   const { isOpen: isOpenSyncSuccess, onOpen: openSyncSuccess, onClose: closeSyncSuccess } = useDisclosure();
-  const { Devnet, Testnet, Mainnet, HyperGrid, Custom, endpoint, setEndpoint, walletAccount, setWalletAccount } =
-    usePageContext();
+  const { Devnet, currentNet } = usePageContext();
 
-  const [isLoading, setIsLoading] = useState(false);
   const steps = [1, 2, 3, 4, 5];
   const [stepIndex, setStepIndex] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [syncStatus, setSyncStatus] = useState(false);
   const [mintNftTX, setMintNftTX] = useState('');
+  const [syncRequestTX, setSyncRequestTX] = useState('');
 
   const [newAccount, setNewAccount] = useState<any>();
   const [mintProgramId, setMintProgramId] = useState(`HdBvhzMrhmdPyrbwL9ZR2ZFqhqVSKcDra7ggdWqCcwps`);
-  const [mintProgram, setMintProgram] = useState<anchor.Program>();
   const [metadata, setMetadata] = useState<any>();
+  const syncProgramId = 'SonicAccountMigrater11111111111111111111111';
 
   // useEffect(() => {
-  //   console.log('stepIndex', stepIndex);
-  //   console.log('endpoint', endpoint);
-  //   openMintSuccess();
-  // }, [stepIndex]);
+  //   openSyncSuccess();
+  //   console.log('currentNet', currentNet);
+  // }, [currentNet]);
 
   function toConfirm() {
-    if (!walletAccount) return toast({ title: 'Connect wallet', status: 'warning' });
+    if (!anchorWallet || !anchorWallet.publicKey) return toast({ title: 'Connect wallet', status: 'warning' });
 
     if (stepIndex > 2) {
-      if (endpoint == Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
+      if (currentNet.value == Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
     } else {
-      if (endpoint !== Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
+      if (currentNet.value !== Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
     }
 
     if (stepIndex == 1) {
@@ -87,9 +91,7 @@ export default function Read() {
       closeMintSuccess();
       setStepIndex(3);
     } else if (stepIndex == 3) {
-      closeMintFailure();
-      // checkSyncStatus();
-      setStepIndex(4);
+      checkSyncStatus();
     } else if (stepIndex == 4) {
       closeSyncSuccess();
       setStepIndex(5);
@@ -102,35 +104,35 @@ export default function Read() {
     if (!mintProgramId) return toast({ title: 'Fill in the Devnet program ID', status: 'warning' });
     const newAccount_ = anchor.web3.Keypair.generate();
     setNewAccount(newAccount_);
-    const program = new anchor.Program(idl as anchor.Idl, mintProgramId);
-    setMintProgram(program);
     setStepIndex(2);
   }
 
   async function getMetadata() {
+    if (isLoading) return;
+    setIsLoading(true);
     try {
       const num = utils.randomNum(1, 5);
       const uri = `https://bafybeieknoava43popez3aroo6umnv24gwy75jfvlcpsoz57ebvqpj5y54.ipfs.nftstorage.link/${num}.json`;
       const response = await axios.get(uri);
       const metadata_ = { ...response.data, uri };
       setMetadata(metadata_);
+      setIsLoading(false);
       mintNft(metadata_);
     } catch (error) {
       console.error(error);
+      setIsLoading(false);
+      toast({ title: 'Mint nft failed', status: 'error' });
     }
   }
 
   async function mintNft(metadata: any) {
+    if (isLoading) return;
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      openMintSuccess();
-    }, 3000);
-    return;
     try {
       let provider: any = anchor.getProvider();
+      const program = new anchor.Program(idl as anchor.Idl, mintProgramId);
       const signer = provider.wallet;
-      const umi = createUmi(endpoint).use(walletAdapterIdentity(signer)).use(mplTokenMetadata());
+      const umi = createUmi(currentNet.value).use(walletAdapterIdentity(signer)).use(mplTokenMetadata());
       const associatedTokenAccount = await getAssociatedTokenAddress(newAccount.publicKey, signer.publicKey);
       let metadataAccount = findMetadataPda(umi, {
         mint: publicKey(newAccount.publicKey)
@@ -138,6 +140,7 @@ export default function Read() {
       let masterEditionAccount = findMasterEditionPda(umi, {
         mint: publicKey(newAccount.publicKey)
       })[0];
+
       const initdata = {
         signer: provider.publicKey,
         mint: newAccount.publicKey,
@@ -151,16 +154,15 @@ export default function Read() {
         rent: anchor.web3.SYSVAR_RENT_PUBKEY
       };
 
-      const tx = await mintProgram.methods
+      const tx = await program.methods
         .initNft(metadata.name, metadata.symbol, metadata.uri)
         .accounts(initdata)
         .signers([newAccount])
         .rpc();
 
-      console.log(`mint nft tx: https://explorer.solana.com/tx/${tx}?cluster=devnet`);
-      console.log(`mint acount: https://explorer.solana.com/address/${newAccount.publicKey}?cluster=devnet`);
-
-      setMintNftTX(`https://explorer.solana.com/tx/${tx}?cluster=devnet`);
+      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      console.log(`mint nft tx: `, txhash);
+      setMintNftTX(txhash);
 
       setIsLoading(false);
       openMintSuccess();
@@ -172,33 +174,52 @@ export default function Read() {
   }
 
   function againMintNft() {
+    if (isLoading) return;
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
       openMintFailure();
-    }, 3000);
+    }, 1000);
   }
 
+  function createInstructionData(index) {
+    const dataLayout = BufferLayout.struct([BufferLayout.u32('instruction')]);
+    const data = Buffer.alloc(dataLayout.span);
+    dataLayout.encode({ instruction: index }, data);
+    return data;
+  }
+
+  // 0 sync , 1 clear cache
   async function syncRequest() {
+    if (isLoading) return;
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setSyncStatus(true);
-      openSyncSuccess();
-    }, 3000);
-    return;
     try {
-      const syncProgramId = 'SonicAccountMigrater11111111111111111111111';
-      const syncProgram = new anchor.Program(migrateridl as anchor.Idl, syncProgramId);
+      // const syncProgram = new anchor.Program(migrateridl as anchor.Idl, syncProgramId);
+      // const tx = await syncProgram.methods
+      //   .migrateremoteaccounts()
+      //   .accounts({
+      //     programid: mintProgramId
+      //   })
+      //   .rpc();
 
-      const tx = await syncProgram.methods
-        .MigrateRemoteAccounts()
-        .accounts({
-          programid: syncProgramId
-        })
-        .rpc();
+      const transaction = new Transaction();
+      const instruction1 = new TransactionInstruction({
+        keys: [
+          { pubkey: new PublicKey(mintProgramId), isSigner: false, isWritable: false },
+          // { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+          // { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+          { pubkey: new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID), isSigner: false, isWritable: false }
+        ],
+        programId: new PublicKey(syncProgramId),
+        data: createInstructionData(0)
+      });
+      transaction.add(instruction1);
 
-      console.log('syncRequest tx', tx);
+      let provider = anchor.getProvider();
+      const tx = await provider.sendAndConfirm(transaction);
+      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      console.log(`sync request tx: `, txhash);
+      setSyncRequestTX(txhash);
 
       setIsLoading(false);
       setSyncStatus(true);
@@ -211,38 +232,65 @@ export default function Read() {
   }
 
   async function checkSyncStatus() {
-    const res = await utils.apiPost('https://api.devnet.solana.com', {
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'getAccountInfo',
-      params: [mintProgramId, { encoding: 'base58' }]
-    });
+    if (currentNet.value == Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const res = await utils.apiPost(currentNet.value, {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'getAccountInfo',
+        params: [mintProgramId, { encoding: 'base58' }]
+      });
 
-    const syncData = res.result.value;
-    setSyncStatus(syncData ? true : false);
-    setStepIndex(syncData ? 5 : 4);
-  }
+      const res2 = await utils.apiPost(currentNet.value, {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'getAccountInfo',
+        params: [MPL_TOKEN_METADATA_PROGRAM_ID, { encoding: 'base58' }]
+      });
 
-  function getNetworkRequire() {
-    if (endpoint === Devnet.value || endpoint === HyperGrid.value) {
-      return HyperGrid.label;
-    } else {
-      return Custom.label;
+      const hasSync = res.result.value && res2.result.value;
+      setSyncStatus(hasSync);
+      setStepIndex(hasSync ? 5 : 4);
+      setIsLoading(false);
+      closeMintFailure();
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
     }
   }
 
-  function createBorderAngular() {
-    return (
-      <>
-        <img className="border_angular angular1" src="/images/border_angular1.png" alt="" />
-        <img className="border_angular angular2" src="/images/border_angular2.png" alt="" />
-        <img className="border_angular angular3" src="/images/border_angular3.png" alt="" />
-        <img className="border_angular angular4" src="/images/border_angular4.png" alt="" />
-      </>
-    );
+  async function clearCache() {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const transaction = new Transaction();
+      const instruction1 = new TransactionInstruction({
+        keys: [
+          { pubkey: new PublicKey(mintProgramId), isSigner: false, isWritable: false },
+          { pubkey: new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID), isSigner: false, isWritable: false }
+        ],
+        programId: new PublicKey(syncProgramId),
+        data: createInstructionData(1)
+      });
+      transaction.add(instruction1);
+      let provider = anchor.getProvider();
+      const tx = await provider.sendAndConfirm(transaction);
+      console.log('clear cache', tx);
+      setIsLoading(false);
+      toast({ title: 'clear cache success', status: 'success' });
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+    }
   }
+
   return (
     <>
+      <div className="page_title">
+        Ability to sync NFT programs from Solana Devnet to Hypergrid and verify sync status
+      </div>
       <div className="stages">
         {steps.map((step) => (
           <div
@@ -251,14 +299,18 @@ export default function Read() {
             style={{ animationDelay: `${(step - 1) * 0.1}s` }}
             onClick={() => setStepIndex(step)}>
             Stage: {step}
-            {stepIndex == step && createBorderAngular()}
+            {stepIndex == step && <BorderAngular />}
           </div>
         ))}
       </div>
 
+      {/* <Button width="100%" bg="#2828b2" isLoading={isLoading} onClick={clearCache}>
+        clear cache
+      </Button> */}
+
       {stepIndex == 1 && (
         <div className="rowbox animate__animated animate__zoomIn">
-          {createBorderAngular()}
+          <BorderAngular />
           <div className="box">
             <div className="title">Fill in the program ID</div>
             <div className="text">Network: {Devnet.label}</div>
@@ -276,7 +328,7 @@ export default function Read() {
 
       {stepIndex == 2 && (
         <div className="rowbox animate__animated animate__zoomIn">
-          {createBorderAngular()}
+          <BorderAngular />
           <div className="box">
             <div className="title">Interact with Devnet programs</div>
             <div className="text">Network: {Devnet.label}</div>
@@ -289,10 +341,14 @@ export default function Read() {
 
       {stepIndex == 3 && (
         <div className="rowbox animate__animated animate__zoomIn">
-          {createBorderAngular()}
+          <BorderAngular />
           <div className="box">
-            <div className="title">Try to interact with the same id program on sonic</div>
-            <div className="text">Network: {getNetworkRequire()}</div>
+            <div className="title">
+              Try to interact with the same id program on <NetworkRequire />
+            </div>
+            <div className="text">
+              Network: <NetworkRequire />
+            </div>
             <div className="text">
               Sync status: <span className={syncStatus ? 'green' : 'red'}>{syncStatus ? 'Synced' : 'Not synced'}</span>
             </div>
@@ -305,10 +361,12 @@ export default function Read() {
 
       {stepIndex == 4 && (
         <div className="rowbox animate__animated animate__zoomIn">
-          {createBorderAngular()}
+          <BorderAngular />
           <div className="box">
             <div className="title">Request sync program</div>
-            <div className="text">Network: {getNetworkRequire()}</div>
+            <div className="text">
+              Network: <NetworkRequire />
+            </div>
             <div className="text">
               Sync status: <span className={syncStatus ? 'green' : 'red'}>{syncStatus ? 'Synced' : 'Not synced'}</span>
             </div>
@@ -320,15 +378,17 @@ export default function Read() {
               ) : (
                 <div className="imgbox animate__animated animate__fadeIn">
                   <div className="imgbox_">
-                    <img className="img2" src="/images/img2.png" alt="" />
+                    <img className="chip" src="/images/chip.png" alt="" />
                     <p className="network">{Devnet.label}</p>
                   </div>
                   <div>
                     <img className="changeimg" src="/images/changeimg.png" alt="" />
                   </div>
                   <div className="imgbox_">
-                    <img className={syncStatus ? 'img2' : 'img2 disabled'} src="/images/img2.png" alt="" />
-                    <p className="network">{getNetworkRequire()}</p>
+                    <img className={syncStatus ? 'chip' : 'chip disabled'} src="/images/chip.png" alt="" />
+                    <p className="network">
+                      <NetworkRequire />
+                    </p>
                   </div>
                 </div>
               )}
@@ -343,25 +403,31 @@ export default function Read() {
 
       {stepIndex == 5 && (
         <div className="rowbox animate__animated animate__zoomIn">
-          {createBorderAngular()}
+          <BorderAngular />
           <div className="box">
-            <div className="title">Try to interact with the same id program on sonic Again</div>
-            <div className="text">Network: {getNetworkRequire()}</div>
+            <div className="title">
+              Try to interact with the same id program on <NetworkRequire /> Again
+            </div>
+            <div className="text">
+              Network: <NetworkRequire />
+            </div>
             <div className="text">
               Sync status: <span className={syncStatus ? 'green' : 'red'}>{syncStatus ? 'Synced' : 'Not synced'}</span>
             </div>
             <div className="syncbox">
               <div className="imgbox animate__animated animate__fadeIn">
                 <div className="imgbox_">
-                  <img className="img2" src="/images/img2.png" alt="" />
+                  <img className="chip" src="/images/chip.png" alt="" />
                   <p className="network">{Devnet.label}</p>
                 </div>
                 <div>
                   <img className="changeimg" src="/images/changeimg.png" alt="" />
                 </div>
                 <div className="imgbox_">
-                  <img className={syncStatus ? 'img2' : 'img2 disabled'} src="/images/img2.png" alt="" />
-                  <p className="network">{getNetworkRequire()}</p>
+                  <img className={syncStatus ? 'chip' : 'chip disabled'} src="/images/chip.png" alt="" />
+                  <p className="network">
+                    <NetworkRequire />
+                  </p>
                 </div>
               </div>
             </div>
@@ -384,7 +450,9 @@ export default function Read() {
                 <div className="nft">
                   <img className="nftimg" src={metadata.image} alt="" />
                   {stepIndex == 5 ? (
-                    <p className="network">{getNetworkRequire()}</p>
+                    <p className="network">
+                      <NetworkRequire />
+                    </p>
                   ) : (
                     <p className="network">{Devnet.label}</p>
                   )}
@@ -417,7 +485,7 @@ export default function Read() {
             <div>The program has not been synchronized yet, mint failed.</div>
           </ModalBody>
           <ModalFooter>
-            <Button bg="#2828b2" onClick={modalToConfirm}>
+            <Button bg="#2828b2" isLoading={isLoading} onClick={modalToConfirm}>
               Confirm
             </Button>
           </ModalFooter>
@@ -431,6 +499,11 @@ export default function Read() {
           <ModalCloseButton />
           <ModalBody>
             <div>Devnet network mint NFT program has been successfully synced to HyperGrid network</div>
+            <div className="linkbox">
+              <Link href={syncRequestTX} isExternal>
+                Sync Request TX
+              </Link>
+            </div>
           </ModalBody>
           <ModalFooter>
             <Button bg="#2828b2" onClick={modalToConfirm}>

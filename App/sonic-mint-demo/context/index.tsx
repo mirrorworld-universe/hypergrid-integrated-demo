@@ -4,6 +4,8 @@ import * as web3 from '@solana/web3.js';
 type Network = {
   label: string;
   value: string;
+  faucet?: string;
+  explorer?: string;
 };
 
 type PageContextType = {
@@ -12,10 +14,10 @@ type PageContextType = {
   Mainnet: Network;
   HyperGrid: Network;
   Custom: Network;
-  endpoint: string;
-  setEndpoint: Dispatch<SetStateAction<string>>;
-  walletAccount: string;
-  setWalletAccount: Dispatch<SetStateAction<string>>;
+  currentNet: Network;
+  setCurrentNet: Dispatch<SetStateAction<Network>>;
+  solBalance: number;
+  setSolBalance: Dispatch<SetStateAction<number>>;
 };
 
 const Context = createContext<PageContextType | undefined>(undefined);
@@ -25,23 +27,24 @@ type PageProviderProps = {
 };
 
 export function PageProvider({ children }: PageProviderProps) {
-  const Devnet = { label: 'Devnet', value: web3.clusterApiUrl('devnet') };
-  const Testnet = { label: 'Testnet', value: web3.clusterApiUrl('testnet') };
-  const Mainnet = { label: 'Mainnet', value: web3.clusterApiUrl('mainnet-beta') };
-  const HyperGrid = { label: 'HyperGrid', value: 'https://rpc.hypergrid.dev' };
-  const Custom = { label: 'Custom RPC', value: 'https://rpc.hypergrid.dev' };
+  const Testnet = { label: 'Solana-Testnet', value: web3.clusterApiUrl('testnet') };
+  const Mainnet = { label: 'Solana-Mainnet', value: web3.clusterApiUrl('mainnet-beta') };
+  const Devnet = {
+    label: 'Solana-Devnet',
+    value: web3.clusterApiUrl('devnet'), // https://api.devnet.solana.com
+    faucet: 'https://faucet.solana.com',
+    explorer: 'https://explorer.solana.com'
+  };
+  const HyperGrid = {
+    label: 'HyperGrid-Sonic',
+    value: 'https://rpc.hypergrid.dev',
+    faucet: 'https://faucet.hypergrid.dev',
+    explorer: 'https://explorer.hypergrid.dev'
+  };
+  const Custom = { label: 'Custom RPC', value: 'https://rpc2.hypergrid.dev' };
 
-  const [endpoint, setEndpoint] = useState(Devnet.value);
-  const [walletAccount, setWalletAccount] = useState('');
-
-  useEffect(() => {
-    const endpoint_ = localStorage.getItem('endpoint');
-    if (endpoint_) {
-      setEndpoint(endpoint_);
-    } else {
-      setEndpoint(Devnet.value);
-    }
-  }, []);
+  const [currentNet, setCurrentNet] = useState(Devnet);
+  const [solBalance, setSolBalance] = useState(0);
 
   const contextValue: PageContextType = {
     Devnet,
@@ -49,10 +52,10 @@ export function PageProvider({ children }: PageProviderProps) {
     Mainnet,
     HyperGrid,
     Custom,
-    endpoint,
-    setEndpoint,
-    walletAccount,
-    setWalletAccount
+    currentNet,
+    setCurrentNet,
+    solBalance,
+    setSolBalance
   };
 
   return <Context.Provider value={contextValue}>{children}</Context.Provider>;

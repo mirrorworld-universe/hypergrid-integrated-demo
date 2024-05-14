@@ -3,6 +3,7 @@ import { usePageContext } from '../../context';
 import utils from '../../utils';
 import axios from 'axios';
 import hgnft from '../../idl/hgnft.json';
+import { BorderAngular, NetworkRequire } from '../../components/Component';
 import { PhoneIcon, AddIcon, LockIcon } from '@chakra-ui/icons';
 import {
   Button,
@@ -18,24 +19,23 @@ import {
   ModalCloseButton,
   useDisclosure
 } from '@chakra-ui/react';
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import * as anchor from '@project-serum/anchor';
 import { BN } from '@project-serum/anchor';
 
 export default function Write() {
   const toast = useToast();
+  const anchorWallet = useAnchorWallet();
 
   const { isOpen: isOpenUpgradeSuccess, onOpen: openUpgradeSuccess, onClose: closeUpgradeSuccess } = useDisclosure();
   const { isOpen: isOpenMintSuccess, onOpen: openMintSuccess, onClose: closeMintSuccess } = useDisclosure();
-  const { isOpen: isOpenMintFailure, onOpen: openMintFailure, onClose: closeMintFailure } = useDisclosure();
-  const { Devnet, Testnet, Mainnet, HyperGrid, Custom, endpoint, setEndpoint, walletAccount, setWalletAccount } =
-    usePageContext();
+  const { Devnet, currentNet } = usePageContext();
 
-  const [isLoading, setIsLoading] = useState(false);
   const steps = [1, 2, 3, 4, 5];
   const steps2 = [1, 2, 3, 4];
   const [stepIndex, setStepIndex] = useState(1);
   const [stepIndex2, setStepIndex2] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [syncStatus, setSyncStatus] = useState(false);
   const [unlockStatus, setUnlockStatus] = useState(false);
   const [lockStatus, setLockStatus] = useState(false);
@@ -50,20 +50,24 @@ export default function Write() {
   const [mintProgramId, setMintProgramId] = useState(`4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z`);
   const [mintProgram, setMintProgram] = useState<anchor.Program>();
   const [metadata, setMetadata] = useState<any>({
-    // name: 'Sonic NFT',
-    // symbol: 'SNFT',
-    // description: 'Sonic Warrior - Type II',
-    // image: 'https://bafybeigrhybzerxl2ey63bfhy4dz6r47m52mvs37w7jimsnccdmieilrxa.ipfs.nftstorage.link/2.jpg',
-    // level: 1
+    name: 'Sonic NFT',
+    symbol: 'SNFT',
+    description: 'Sonic Warrior - Type II',
+    image: 'https://bafybeigrhybzerxl2ey63bfhy4dz6r47m52mvs37w7jimsnccdmieilrxa.ipfs.nftstorage.link/2.jpg',
+    level: 1
   });
 
+  // useEffect(() => {
+  //   console.log('currentNet', currentNet);
+  // }, [currentNet]);
+
   function toConfirm() {
-    if (!walletAccount) return toast({ title: 'Connect wallet', status: 'warning' });
+    if (!anchorWallet || !anchorWallet.publicKey) return toast({ title: 'Connect wallet', status: 'warning' });
 
     if (stepIndex > 2) {
-      if (endpoint == Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
+      if (currentNet.value == Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
     } else {
-      if (endpoint !== Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
+      if (currentNet.value !== Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
     }
 
     if (stepIndex == 1) {
@@ -143,8 +147,6 @@ export default function Write() {
   }
 
   function generateAccount() {
-    setStepIndex(2);
-    return;
     if (!mintProgramId) return toast({ title: 'Fill in the Devnet program ID', status: 'warning' });
 
     const program = new anchor.Program(hgnft as anchor.Idl, mintProgramId);
@@ -156,39 +158,36 @@ export default function Write() {
   }
 
   async function getMetadata() {
+    if (isLoading) return;
+    setIsLoading(true);
     try {
       const num = utils.randomNum(1, 5);
       const uri = `https://bafybeieknoava43popez3aroo6umnv24gwy75jfvlcpsoz57ebvqpj5y54.ipfs.nftstorage.link/${num}.json`;
       const response = await axios.get(uri);
       const metadata_ = { ...response.data, uri, level: 1 };
-      console.log('metadata_', metadata_);
       setMetadata(metadata_);
+      setIsLoading(false);
       mintNft(metadata_);
     } catch (error) {
       console.error(error);
+      setIsLoading(false);
+      toast({ title: 'Mint nft failed', status: 'error' });
     }
   }
 
   async function mintNft(metadata: any) {
+    if (isLoading) return;
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      openMintSuccess();
-    }, 3000);
-    return;
     try {
       const tx = await mintProgram.methods
         .mintnft(metadata.name, metadata.uri, new BN(metadata.level))
-        .accounts({
-          mint: newAccount.publicKey
-        })
+        .accounts({ mint: newAccount.publicKey })
         .signers([newAccount])
         .rpc();
 
-      console.log(`mint nft tx: https://explorer.solana.com/tx/${tx}?cluster=devnet`);
-      console.log(`mint acount: https://explorer.solana.com/address/${newAccount.publicKey}?cluster=devnet`);
-
-      setMintNftTX(`https://explorer.solana.com/tx/${tx}?cluster=devnet`);
+      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      console.log(`mint nft tx: `, txhash);
+      setMintNftTX(txhash);
 
       setIsLoading(false);
       openMintSuccess();
@@ -200,15 +199,11 @@ export default function Write() {
   }
 
   async function upgradeRequest() {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      openUpgradeSuccess();
-    }, 2000);
     return;
+    if (isLoading) return;
+    setIsLoading(true);
     try {
       const newLevel = new BN(metadata.level);
-
       const tx = await mintProgram.methods
         .setvalue(newLevel)
         .accounts({
@@ -216,10 +211,9 @@ export default function Write() {
         })
         .rpc();
 
-      console.log(`set value tx: https://explorer.solana.com/tx/${tx}?cluster=devnet`);
-      console.log(`mint acount: https://explorer.solana.com/address/${newAccount.publicKey}?cluster=devnet`);
-
-      setL2SetValueTX(`https://explorer.solana.com/tx/${tx}?cluster=devnet`);
+      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      console.log(`set value tx: `, txhash);
+      setL2SetValueTX(txhash);
 
       setIsLoading(false);
       openUpgradeSuccess();
@@ -230,26 +224,9 @@ export default function Write() {
     }
   }
 
-  function createBorderAngular() {
-    return (
-      <>
-        <img className="border_angular angular1" src="/images/border_angular1.png" alt="" />
-        <img className="border_angular angular2" src="/images/border_angular2.png" alt="" />
-        <img className="border_angular angular3" src="/images/border_angular3.png" alt="" />
-        <img className="border_angular angular4" src="/images/border_angular4.png" alt="" />
-      </>
-    );
-  }
-
-  function getNetworkRequire() {
-    if (endpoint === Devnet.value || endpoint === HyperGrid.value) {
-      return HyperGrid.label;
-    } else {
-      return Custom.label;
-    }
-  }
   return (
     <>
+      <div className="page_title">Sync and modify the Solana Devnet NFT program on Hypergrid</div>
       <div className="stages">
         {steps.map((step) => (
           <div
@@ -258,14 +235,14 @@ export default function Write() {
             style={{ animationDelay: `${(step - 1) * 0.1}s` }}
             onClick={() => setStepIndex(step)}>
             Stage: {step}
-            {stepIndex == step && createBorderAngular()}
+            {stepIndex == step && <BorderAngular />}
           </div>
         ))}
       </div>
 
       {stepIndex == 1 && (
         <div className="rowbox animate__animated animate__zoomIn">
-          {createBorderAngular()}
+          <BorderAngular />
           <div className="box">
             <div className="title">Fill in the program ID</div>
             <div className="text">Network: {Devnet.label}</div>
@@ -283,7 +260,7 @@ export default function Write() {
 
       {stepIndex == 2 && (
         <div className="rowbox animate__animated animate__zoomIn">
-          {createBorderAngular()}
+          <BorderAngular />
           <div className="box">
             <div className="title">Interact with Devnet programs</div>
             <div className="text">Network: {Devnet.label}</div>
@@ -296,10 +273,14 @@ export default function Write() {
 
       {stepIndex == 3 && (
         <div className="rowbox animate__animated animate__zoomIn">
-          {createBorderAngular()}
+          <BorderAngular />
           <div className="box">
-            <div className="title">Try to set value on Sonic</div>
-            <div className="text">Network: {getNetworkRequire()}</div>
+            <div className="title">
+              Try to set value on <NetworkRequire />
+            </div>
+            <div className="text">
+              Network: <NetworkRequire />
+            </div>
             {metadata && (
               <div className="nftboxlist">
                 <div className="nftbox">
@@ -329,10 +310,12 @@ export default function Write() {
 
       {stepIndex == 4 && (
         <div className="rowbox animate__animated animate__zoomIn">
-          {createBorderAngular()}
+          <BorderAngular />
           <div className="box">
             <div className="title">Set value progress</div>
-            <div className="text">Network: {getNetworkRequire()}</div>
+            <div className="text">
+              Network: <NetworkRequire />
+            </div>
             <div className="stages2">
               {steps2.map((step) => (
                 <div key={step}>
@@ -376,15 +359,17 @@ export default function Write() {
                   ) : (
                     <div className="imgbox animate__animated animate__fadeIn">
                       <div className="imgbox_">
-                        <img className="img2" src="/images/img2.png" alt="" />
+                        <img className="chip" src="/images/chip.png" alt="" />
                         <p className="network">{Devnet.label}</p>
                       </div>
                       <div>
                         <img className="changeimg" src="/images/changeimg.png" alt="" />
                       </div>
                       <div className="imgbox_">
-                        <img className={syncStatus ? 'img2' : 'img2 disabled'} src="/images/img2.png" alt="" />
-                        <p className="network">{getNetworkRequire()}</p>
+                        <img className={syncStatus ? 'chip' : 'chip disabled'} src="/images/chip.png" alt="" />
+                        <p className="network">
+                          <NetworkRequire />
+                        </p>
                       </div>
                     </div>
                   )}
@@ -461,7 +446,9 @@ export default function Write() {
                     <div className="nftbox animate__animated animate__flipInY">
                       <div className="nft active">
                         <img className="nftimg" src={metadata.image} alt="" />
-                        <p className="network">{getNetworkRequire()}</p>
+                        <p className="network">
+                          <NetworkRequire />
+                        </p>
                       </div>
                       <p className="name">{metadata.name}</p>
                       <p className="level active">level: {metadata.level + 1}</p>
@@ -479,7 +466,9 @@ export default function Write() {
                   <div className="nftbox animate__animated animate__fadeIn">
                     <div className="nft">
                       <img className="nftimg" src={metadata.image} alt="" />
-                      <p className="network">{getNetworkRequire()}</p>
+                      <p className="network">
+                        <NetworkRequire />
+                      </p>
                     </div>
                     <p className="name">{metadata.name}</p>
                     <p className="level">
@@ -495,7 +484,7 @@ export default function Write() {
 
       {stepIndex == 5 && (
         <div className="rowbox animate__animated animate__zoomIn">
-          {createBorderAngular()}
+          <BorderAngular />
           <div className="box">
             <div className="title">State settlement succeed</div>
             <div className="text">My NFTS: </div>

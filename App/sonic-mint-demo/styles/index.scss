@@ -39,17 +39,18 @@ body {
   filter: gray !important;
 }
 
-.wallet-adapter-button,
-.wallet-adapter-modal-title,
-.wallet-adapter-dropdown-list {
-  font-family: Orbitron !important;
-}
 .wallet-adapter-button {
+  font-family: Orbitron !important;
+  padding: 0px 16px !important;
   height: 2.5rem !important;
   line-height: 2.5rem !important;
 }
 .wallet-adapter-button-trigger {
   background: #2828b2 !important;
+}
+.wallet-adapter-modal-title,
+.wallet-adapter-dropdown-list {
+  font-family: Orbitron !important;
 }
 
 .chakra-modal__content {
@@ -73,12 +74,12 @@ body {
     align-items: center;
     .logo {
       width: auto;
-      height: 50px;
+      height: 40px;
     }
     a {
-      margin-left: 20px;
+      margin-left: 10px;
       font-family: Orbitron;
-      font-size: 20px;
+      font-size: 16px;
       font-weight: 600;
       color: #fff;
       &.active {
@@ -91,6 +92,7 @@ body {
     align-items: center;
     .chakra-button {
       margin-right: 10px;
+      font-size: 16px;
     }
   }
 }
@@ -152,6 +154,15 @@ body {
     bottom: 0;
     right: 0;
   }
+}
+
+.page_title {
+  font-family: Orbitron;
+  font-size: 20px;
+  font-weight: 400;
+  color: #fff;
+  text-align: center;
+  margin: 20px 0;
 }
 
 .rowbox {
@@ -247,20 +258,24 @@ body {
     .imgbox_ {
       position: relative;
       .network {
+        width: 100%;
+        height: 100%;
         font-family: Orbitron;
         font-size: 12px;
         font-weight: 400;
         color: #fff;
         position: absolute;
-        left: 10px;
-        top: 10px;
+        left: 0;
+        top: 0;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.5);
       }
     }
 
-    .img2 {
+    .chip {
       width: 150px;
       height: auto;
-      &.img2_ {
+      &.chip_ {
         opacity: 0.5;
       }
     }
@@ -306,13 +321,17 @@ body {
       left: 0;
     }
     .network {
+      width: 100%;
+      height: 100%;
+      text-align: left;
+      padding: 10px;
       font-family: Orbitron;
       font-size: 12px;
       font-weight: 400;
       color: #fff;
       position: absolute;
-      left: 20px;
-      top: 20px;
+      left: 0;
+      top: 0;
     }
     .nftimg {
       width: 180px;

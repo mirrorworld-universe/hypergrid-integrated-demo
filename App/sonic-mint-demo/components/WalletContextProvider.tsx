@@ -6,7 +6,7 @@ require('@solana/wallet-adapter-react-ui/styles.css');
 import { usePageContext } from '../context';
 
 const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const { endpoint } = usePageContext();
+  const { currentNet } = usePageContext();
 
   const wallets = useMemo(() => {
     return [
@@ -17,7 +17,7 @@ const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
   }, []);
 
   return (
-    <ConnectionProvider endpoint={endpoint}>
+    <ConnectionProvider endpoint={currentNet.value}>
       <WalletProvider wallets={wallets} autoConnect={true}>
         <WalletModalProvider>{children}</WalletModalProvider>
       </WalletProvider>
