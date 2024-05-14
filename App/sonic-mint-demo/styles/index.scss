@@ -39,17 +39,18 @@ body {
   filter: gray !important;
 }
 
-.wallet-adapter-button,
-.wallet-adapter-modal-title,
-.wallet-adapter-dropdown-list {
-  font-family: Orbitron !important;
-}
 .wallet-adapter-button {
+  font-family: Orbitron !important;
+  padding: 0px 16px !important;
   height: 2.5rem !important;
   line-height: 2.5rem !important;
 }
 .wallet-adapter-button-trigger {
   background: #2828b2 !important;
+}
+.wallet-adapter-modal-title,
+.wallet-adapter-dropdown-list {
+  font-family: Orbitron !important;
 }
 
 .chakra-modal__content {
@@ -73,12 +74,12 @@ body {
     align-items: center;
     .logo {
       width: auto;
-      height: 50px;
+      height: 40px;
     }
     a {
-      margin-left: 20px;
+      margin-left: 10px;
       font-family: Orbitron;
-      font-size: 20px;
+      font-size: 16px;
       font-weight: 600;
       color: #fff;
       &.active {
@@ -91,6 +92,7 @@ body {
     align-items: center;
     .chakra-button {
       margin-right: 10px;
+      font-size: 16px;
     }
   }
 }

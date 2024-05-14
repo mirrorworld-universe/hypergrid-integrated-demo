@@ -126,17 +126,11 @@ export default function Read() {
     if (isLoading) return;
     setIsLoading(true);
     try {
-      console.log('endpoint', currentNet.value);
-      console.log('mintProgramId', mintProgramId);
-      console.log('newAccount', newAccount.publicKey.toBase58());
-
       let provider: any = anchor.getProvider();
-      console.log('provider', provider);
       const program = new anchor.Program(idl as anchor.Idl, mintProgramId);
-      console.log('program', program);
       const signer = provider.wallet;
+
       const umi = createUmi(currentNet.value).use(walletAdapterIdentity(signer)).use(mplTokenMetadata());
-      console.log('umi', umi);
       const associatedTokenAccount = await getAssociatedTokenAddress(newAccount.publicKey, signer.publicKey);
       let metadataAccount = findMetadataPda(umi, {
         mint: publicKey(newAccount.publicKey)
@@ -165,9 +159,9 @@ export default function Read() {
         .signers([newAccount])
         .rpc();
 
-      console.log(`mint nft tx: https://explorer.solana.com/tx/${tx}?cluster=devnet`);
-
-      setMintNftTX(`https://explorer.solana.com/tx/${tx}?cluster=devnet`);
+      const mintTx = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      console.log(`mint nft tx: `, mintTx);
+      setMintNftTX(mintTx);
 
       setIsLoading(false);
       openMintSuccess();
@@ -189,15 +183,8 @@ export default function Read() {
 
   function createInstructionData(index) {
     const dataLayout = BufferLayout.struct([BufferLayout.u32('instruction')]);
-
     const data = Buffer.alloc(dataLayout.span);
-    dataLayout.encode(
-      {
-        instruction: index
-      },
-      data
-    );
-
+    dataLayout.encode({ instruction: index }, data);
     return data;
   }
 
@@ -206,7 +193,7 @@ export default function Read() {
     setIsLoading(true);
     try {
       const syncProgramId = 'SonicAccountMigrater11111111111111111111111';
-      const syncProgram = new anchor.Program(migrateridl as anchor.Idl, syncProgramId);
+      // const syncProgram = new anchor.Program(migrateridl as anchor.Idl, syncProgramId);
 
       // const tx = await syncProgram.methods
       //   .migrateremoteaccounts()
@@ -218,12 +205,10 @@ export default function Read() {
       const transaction = new Transaction();
       const instruction1 = new TransactionInstruction({
         keys: [
-          //{ pubkey: feePayer.publicKey, isSigner: true, isWritable: false },
-          //{ pubkey: greetedAccountPubkey, isSigner: false, isWritable: false },
-          { pubkey: new PublicKey(mintProgramId), isSigner: false, isWritable: false }
+          { pubkey: new PublicKey(mintProgramId), isSigner: false, isWritable: false },
           // { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
           // { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-          // { pubkey: new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID), isSigner: false, isWritable: false },
+          { pubkey: new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID), isSigner: false, isWritable: false }
         ],
         programId: new PublicKey(syncProgramId),
         data: createInstructionData(0)
@@ -255,9 +240,16 @@ export default function Read() {
         params: [mintProgramId, { encoding: 'base58' }]
       });
 
-      const syncData = res.result.value;
-      setSyncStatus(syncData ? true : false);
-      setStepIndex(syncData ? 5 : 4);
+      const res2 = await utils.apiPost(currentNet.value, {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'getAccountInfo',
+        params: [MPL_TOKEN_METADATA_PROGRAM_ID, { encoding: 'base58' }]
+      });
+
+      const hasSync = res.result.value && res2.result.value;
+      setSyncStatus(hasSync);
+      setStepIndex(hasSync ? 5 : 4);
       setIsLoading(false);
       closeMintFailure();
     } catch (error) {

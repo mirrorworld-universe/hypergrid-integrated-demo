@@ -5,6 +5,7 @@ type Network = {
   label: string;
   value: string;
   faucet?: string;
+  explorer?: string;
 };
 
 type PageContextType = {
@@ -28,11 +29,17 @@ type PageProviderProps = {
 export function PageProvider({ children }: PageProviderProps) {
   const Testnet = { label: 'Solana-Testnet', value: web3.clusterApiUrl('testnet') };
   const Mainnet = { label: 'Solana-Mainnet', value: web3.clusterApiUrl('mainnet-beta') };
-  const Devnet = { label: 'Solana-Devnet', value: web3.clusterApiUrl('devnet'), faucet: 'https://faucet.solana.com/' };
+  const Devnet = {
+    label: 'Solana-Devnet',
+    value: web3.clusterApiUrl('devnet'),
+    faucet: 'https://faucet.solana.com',
+    explorer: 'https://explorer.solana.com'
+  };
   const HyperGrid = {
     label: 'HyperGrid-Sonic',
     value: 'https://rpc.hypergrid.dev',
-    faucet: 'https://faucet.hypergrid.dev/'
+    faucet: 'https://faucet.hypergrid.dev',
+    explorer: 'https://explorer.hypergrid.dev'
   };
   const Custom = { label: 'Custom RPC', value: 'https://rpc2.hypergrid.dev' };
 
