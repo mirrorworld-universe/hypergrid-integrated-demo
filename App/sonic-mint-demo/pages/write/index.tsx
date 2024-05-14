@@ -207,7 +207,7 @@ export default function Write() {
       const instruction1 = new TransactionInstruction({
         keys: [
           { pubkey: new PublicKey(mintProgramId), isSigner: false, isWritable: false },
-          { pubkey: new PublicKey(newAccount.publicKey), isSigner: false, isWritable: false }
+          { pubkey: new PublicKey(newAccount.publicKey), isSigner: false, isWritable: true }
         ],
         programId: new PublicKey(syncProgramId),
         data: createInstructionData(0)
@@ -216,9 +216,7 @@ export default function Write() {
       const program = new anchor.Program(hgnft as anchor.Idl, mintProgramId);
       const instruction2 = await program.methods
         .fakesetvalue(new BN(metadata.level))
-        .accounts({
-          mint: newAccount.publicKey
-        })
+        .accounts({ mint: newAccount.publicKey })
         .instruction();
 
       console.log('instruction1', instruction1);
@@ -227,6 +225,7 @@ export default function Write() {
       transaction.add(instruction2);
 
       let provider: any = anchor.getProvider();
+
       const tx = await provider.sendAndConfirm(transaction);
       console.log(`sync request tx: `, tx);
 

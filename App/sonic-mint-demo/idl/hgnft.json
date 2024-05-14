@@ -83,7 +83,7 @@
       "accounts": [
         {
           "name": "mint",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
