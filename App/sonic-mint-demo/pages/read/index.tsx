@@ -232,7 +232,6 @@ export default function Read() {
   }
 
   async function checkSyncStatus() {
-    if (currentNet.value == Devnet.value) return toast({ title: `Please switch network`, status: 'warning' });
     if (isLoading) return;
     setIsLoading(true);
     try {
@@ -262,7 +261,7 @@ export default function Read() {
   }
 
   async function clearCache() {
-    if (isLoading) return;
+    if (isLoading || stepIndex !== 3 || !mintProgramId || currentNet.value == Devnet.value || !newAccount) return;
     setIsLoading(true);
     try {
       const transaction = new Transaction();

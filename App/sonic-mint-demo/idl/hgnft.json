@@ -83,7 +83,7 @@
       "accounts": [
         {
           "name": "mint",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -125,5 +125,8 @@
         ]
       }
     }
-  ]
+  ],
+  "metadata": {
+    "address": "4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z"
+  }
 }

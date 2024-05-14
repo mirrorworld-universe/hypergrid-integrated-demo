@@ -22,12 +22,6 @@ import {
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import * as anchor from '@project-serum/anchor';
 import { BN } from '@project-serum/anchor';
-import {
-  findMasterEditionPda,
-  findMetadataPda,
-  mplTokenMetadata,
-  MPL_TOKEN_METADATA_PROGRAM_ID
-} from '@metaplex-foundation/mpl-token-metadata';
 
 import { TransactionInstruction, Transaction, PublicKey } from '@solana/web3.js';
 const BufferLayout = require('@solana/buffer-layout');
@@ -57,7 +51,6 @@ export default function Write() {
 
   const [newAccount, setNewAccount] = useState<any>();
   const [mintProgramId, setMintProgramId] = useState(`4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z`);
-  const [mintProgram, setMintProgram] = useState<anchor.Program>();
   const [metadata, setMetadata] = useState<any>({
     name: 'Sonic NFT',
     symbol: 'SNFT',
@@ -158,10 +151,6 @@ export default function Write() {
 
   function generateAccount() {
     if (!mintProgramId) return toast({ title: 'Fill in the Devnet program ID', status: 'warning' });
-
-    const program = new anchor.Program(hgnft as anchor.Idl, mintProgramId);
-    setMintProgram(program);
-
     const newAccount_ = anchor.web3.Keypair.generate();
     setNewAccount(newAccount_);
     setStepIndex(2);
@@ -187,10 +176,11 @@ export default function Write() {
 
   async function mintNft(metadata: any) {
     if (isLoading) return;
-    console.log('metadata', metadata);
     setIsLoading(true);
     try {
-      const tx = await mintProgram.methods
+      const program = new anchor.Program(hgnft as anchor.Idl, mintProgramId);
+
+      const tx = await program.methods
         .mintnft(metadata.name, metadata.uri, new BN(metadata.level))
         .accounts({ mint: newAccount.publicKey })
         .signers([newAccount])
@@ -213,33 +203,35 @@ export default function Write() {
     if (isLoading) return;
     setIsLoading(true);
     try {
-      // const newLevel = new BN(metadata.level);
-      // const tx2 = await mintProgram.methods
-      //   .fakesetvalue(newLevel)
-      //   .accounts({
-      //     mint: newAccount.publicKey
-      //   })
-      //   .rpc();
-      // const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
-      // console.log(`set value tx: `, txhash);
-      // setL2SetValueTX(txhash);
-
       const transaction = new Transaction();
       const instruction1 = new TransactionInstruction({
         keys: [
           { pubkey: new PublicKey(mintProgramId), isSigner: false, isWritable: false },
-          { pubkey: new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID), isSigner: false, isWritable: false }
+          { pubkey: new PublicKey(newAccount.publicKey), isSigner: false, isWritable: false }
         ],
         programId: new PublicKey(syncProgramId),
         data: createInstructionData(0)
       });
+
+      const program = new anchor.Program(hgnft as anchor.Idl, mintProgramId);
+      const instruction2 = await program.methods
+        .fakesetvalue(new BN(metadata.level))
+        .accounts({
+          mint: newAccount.publicKey
+        })
+        .instruction();
+
+      console.log('instruction1', instruction1);
+      console.log('instruction2', instruction2);
       transaction.add(instruction1);
+      transaction.add(instruction2);
 
-      let provider = anchor.getProvider();
+      let provider: any = anchor.getProvider();
       const tx = await provider.sendAndConfirm(transaction);
-      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
-      console.log(`sync request tx: `, txhash);
+      console.log(`sync request tx: `, tx);
 
+      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      setL2SetValueTX(txhash);
       setIsLoading(false);
       openUpgradeSuccess();
     } catch (error) {
@@ -254,6 +246,32 @@ export default function Write() {
     const data = Buffer.alloc(dataLayout.span);
     dataLayout.encode({ instruction: index }, data);
     return data;
+  }
+
+  async function clearCache() {
+    if (isLoading || stepIndex !== 3 || !mintProgramId || currentNet.value == Devnet.value || !newAccount) return;
+
+    setIsLoading(true);
+    try {
+      const transaction = new Transaction();
+      const instruction1 = new TransactionInstruction({
+        keys: [
+          { pubkey: new PublicKey(mintProgramId), isSigner: false, isWritable: false },
+          { pubkey: new PublicKey(newAccount.publicKey), isSigner: false, isWritable: false }
+        ],
+        programId: new PublicKey(syncProgramId),
+        data: createInstructionData(1)
+      });
+      transaction.add(instruction1);
+      let provider = anchor.getProvider();
+      const tx = await provider.sendAndConfirm(transaction);
+      console.log('clear cache', tx);
+      setIsLoading(false);
+      toast({ title: 'clear cache success', status: 'success' });
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -271,6 +289,10 @@ export default function Write() {
           </div>
         ))}
       </div>
+
+      {/* <Button width="100%" bg="#2828b2" isLoading={isLoading} onClick={clearCache}>
+        clear cache
+      </Button> */}
 
       {stepIndex == 1 && (
         <div className="rowbox animate__animated animate__zoomIn">
