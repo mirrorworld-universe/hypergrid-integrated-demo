@@ -171,32 +171,13 @@ export default function Read() {
     }
   }
 
-  async function againMintNft() {
+  function againMintNft() {
     if (isLoading) return;
     setIsLoading(true);
-    try {
-      const transaction = new Transaction();
-      const instruction1 = new TransactionInstruction({
-        keys: [
-          { pubkey: new PublicKey(mintProgramId), isSigner: false, isWritable: false },
-          { pubkey: new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID), isSigner: false, isWritable: false }
-        ],
-        programId: new PublicKey(syncProgramId),
-        data: createInstructionData(1)
-      });
-      transaction.add(instruction1);
-
-      let provider = anchor.getProvider();
-      const tx = await provider.sendAndConfirm(transaction);
-      console.log('clear cache', tx);
-
+    setTimeout(() => {
       setIsLoading(false);
-      setSyncStatus(false);
       openMintFailure();
-    } catch (error) {
-      console.error(error);
-      setIsLoading(false);
-    }
+    }, 1000);
   }
 
   function createInstructionData(index) {
@@ -275,6 +256,31 @@ export default function Read() {
     }
   }
 
+  async function clearCache() {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const transaction = new Transaction();
+      const instruction1 = new TransactionInstruction({
+        keys: [
+          { pubkey: new PublicKey(mintProgramId), isSigner: false, isWritable: false },
+          { pubkey: new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID), isSigner: false, isWritable: false }
+        ],
+        programId: new PublicKey(syncProgramId),
+        data: createInstructionData(1)
+      });
+      transaction.add(instruction1);
+      let provider = anchor.getProvider();
+      const tx = await provider.sendAndConfirm(transaction);
+      console.log('clear cache', tx);
+      setIsLoading(false);
+      toast({ title: 'clear cache success', status: 'success' });
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+    }
+  }
+
   return (
     <>
       <div className="stages">
@@ -289,7 +295,9 @@ export default function Read() {
           </div>
         ))}
       </div>
-
+      {/* <Button width="100%" bg="#2828b2" isLoading={isLoading} onClick={clearCache}>
+        clear cache
+      </Button> */}
       {stepIndex == 1 && (
         <div className="rowbox animate__animated animate__zoomIn">
           <BorderAngular />
