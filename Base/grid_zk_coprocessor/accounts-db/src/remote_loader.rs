@@ -13,9 +13,57 @@ use {
     },
     solana_measure::measure::Measure,
     std::{
-        fmt, option_env, str::FromStr, time::Duration, thread
+        fmt, option_env, time::Duration, //thread, //str::FromStr, 
+        fs::File, io,
+        path::Path,
     },
+    serde_derive::{Deserialize, Serialize},
+    sha2::{Digest, Sha256},
 };
+
+
+fn load_config_file<T, P>(config_file: P) -> Result<T, io::Error>
+where
+    T: serde::de::DeserializeOwned,
+    P: AsRef<Path>,
+{
+    let file = File::open(config_file)?;
+    let config = serde_yaml::from_reader(file)
+        .map_err(|err| io::Error::new(io::ErrorKind::Other, format!("{err:?}")))?;
+    Ok(config)
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct Config {
+    pub baselayer_rpc_url: String,
+    pub keypair_base58: String,
+    pub sonic_program_id: String,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        let keypair_base58 = "5gA6JTpFziXu7py2j63arRUq1H29p6pcPMB74LaNuzcSqULPD6s1SZUS3UMPvFEE9oXmt1kk6ez3C6piTc3bwpJ6".to_string();
+        let baselayer_rpc_url = "https://api.devnet.solana.com".to_string();
+        let sonic_program_id ="4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z".to_string();
+
+        Self {
+            baselayer_rpc_url,
+            keypair_base58,
+            sonic_program_id,
+        }
+    }
+}
+
+impl Config {
+    /// Load a configuration from file.
+    ///
+    /// # Errors
+    ///
+    /// This function may return typical file I/O errors.
+    pub fn load(config_file: &str) -> Result<Self, io::Error> {
+        load_config_file(config_file)
+    }
+}
 
 type AccountCacheKeyMap = DashMap<Pubkey, AccountSharedData>;
 
@@ -26,6 +74,7 @@ pub struct RemoteAccountLoader {
     account_cache: AccountCacheKeyMap,
     /// Enable or disable the remote loader.
     enable: bool,
+    config: Config,
 }
 
 impl fmt::Debug for RemoteAccountLoader {
@@ -40,12 +89,17 @@ impl fmt::Debug for RemoteAccountLoader {
 
 impl Default for RemoteAccountLoader {
     fn default() -> Self {
-        let rpc_url: Option<&'static str> = option_env!("BASE_LAYER_RPC");
-        Self::new(rpc_url.unwrap_or("https://api.devnet.solana.com/"))//"http://rpc.hypergrid.dev")) //
+        let config_path: Option<&'static str> = option_env!("SONIC_CONFIG_FILE");
+        let default_config_path = {
+            let mut default_config_path = dirs_next::home_dir().expect("home directory");
+            default_config_path.extend([".config", "hypergrid.yml"]);
+            default_config_path.to_str().unwrap().to_string()
+        };
+        Self::new(config_path.unwrap_or(default_config_path.as_str()))
     }
 }
 
-const SONIC_PROGRAM_ID: &str = "4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z";
+// const SONIC_PROGRAM_ID: &str = "4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z";
 
 #[derive(Serialize, Deserialize)]
 struct SetValueInstruction {
@@ -59,20 +113,39 @@ struct SetLockerInstruction {
     pub locker: Pubkey,
 }
 
+fn hash_instruction_method(method: &str) -> [u8; 8] {
+    let mut hasher = Sha256::new();
+    hasher.update(format!("global:{}", method));
+    let result = hasher.finalize();
+    let mut hash = [0u8; 8];
+    hash.copy_from_slice(&result[..8]);
+    hash
+}
+
 /// Remote account loader.
 impl RemoteAccountLoader {
     /// Create a new remote loader.
-    pub fn new<U: ToString>(url: U) -> Self {
-        Self::new_with_timeout(url, Duration::from_secs(30))
-    }
+    pub fn new(config_path: &str) -> Self {
+        let mut config = Config::default();
+        match Config::load(config_path) {
+            Ok(setting) => {
+                config = setting;
 
-    /// Create a new remote loader with a timeout.
-    pub fn new_with_timeout<U: ToString>(url: U, timeout: Duration) -> Self {
+                // let key = Keypair::from_base58_string(&setting.keypair_base58); 
+                // let program_id = Pubkey::from_str(&setting.sonic_program_id).unwrap();
+                // println!("setting: {:?}, {:?}, {:?}", &setting.baselayer_rpc_url, key, program_id)
+            },
+            Err(e) => {
+                println!("setting: {:?}", e);
+            },
+        };
+
         Self {
-            rpc_client: RpcClient::new_with_timeout_and_commitment(url.to_string(), 
-                    timeout, CommitmentConfig::confirmed()),
+            rpc_client: RpcClient::new_with_timeout_and_commitment(&config.baselayer_rpc_url, 
+            Duration::from_secs(30), CommitmentConfig::confirmed()),
             account_cache: AccountCacheKeyMap::default(),
             enable: true,
+            config,
         }
     }
 
@@ -107,7 +180,7 @@ impl RemoteAccountLoader {
         if !self.enable || Self::ignored_account(pubkey) {
             return false;
         }
-        println!("RemoteAccountLoader.has_account: {:?}, {}", thread::current().id(), pubkey.to_string());
+        
         match self.account_cache.contains_key(pubkey) {
             true => true,
             false => false, //self.load_account(pubkey).is_some(),
@@ -125,7 +198,7 @@ impl RemoteAccountLoader {
             return None;
         }
    
-        // println!("data: {:?}", account_data.to_string());
+
         // let slot = result["context"]["slot"].as_u64().unwrap_or(0);
         let data = value["data"][0].as_str().unwrap_or("");
         let encoding = value["data"][1].as_str().unwrap_or("");
@@ -167,7 +240,17 @@ impl RemoteAccountLoader {
         if !self.enable || Self::ignored_account(pubkey) {
             return None;
         }
-        self.load_account_via_rpc(pubkey)
+        match self.load_account_via_rpc(pubkey) {
+            Some(account) => {
+                //Sonic: check if programdata account exists
+                if let Some(programdata_address) = RemoteAccountLoader::has_programdata_account(account.clone()) {
+                    //Sonic: load programdata account from remote
+                    self.load_account(&programdata_address);
+                }
+                Some(account)
+            },
+            None => None,
+        }
     }
 
     /// Load the account from the RPC.
@@ -175,12 +258,12 @@ impl RemoteAccountLoader {
         if Self::ignored_account(pubkey) {
             return None;
         }
-        println!("Thread {:?}: load_account_via_rpc: {}",  thread::current().id(), pubkey.to_string());
+        
         let mut time = Measure::start("load_account_from_remote");
         let result = self.rpc_client.get_account(pubkey);
         match result {
             Ok(account) => {
-                println!("load_account_via_rpc: account: {:?}", account);
+                
                 let mut account = AccountSharedData::create(
                     account.lamports,
                     account.data,
@@ -192,11 +275,11 @@ impl RemoteAccountLoader {
         
                 self.account_cache.insert(pubkey.clone(), account.clone());
                 time.stop();
-                println!("load_account_via_rpc: account: {:?}, {:?}", account, time.as_us());
+                
                 Some(account)
             },
             Err(e) => {
-                println!("load_account_via_rpc: failed to load account: {:?}\n", e);
+                
                 None
             }
         }
@@ -227,7 +310,7 @@ impl RemoteAccountLoader {
                 .send().unwrap();
             if res.status().is_success() {
                 let account_json: serde_json::Value = res.json().unwrap();
-                // println!("load_account_from_remote 1: {:?}", account_json);
+                
                 RemoteAccountLoader::deserialize_from_json(account_json)
             } else {
                 None
@@ -267,12 +350,27 @@ impl RemoteAccountLoader {
         if !self.enable || Self::ignored_account(pubkey) {
             return;
         }
-        self.account_cache.remove(pubkey);
+        // println!("RemoteAccountLoader.deactivate_account: {}", pubkey.to_string());
+        match self.get_account(pubkey) {
+            Some(account) => {
+                self.account_cache.remove(pubkey);
+
+                //remove the related programdata account
+                match Self::has_programdata_account(account) {
+                    Some(programdata_address) => {
+                        self.account_cache.remove(&programdata_address);
+                    },
+                    None => { },
+                }
+            },
+            None => {},
+        }
+        
     }
 
     /// Check if the account is a sonic program.
     pub fn is_sonic_program(&self, pubkey: &Pubkey) -> bool {
-        if pubkey.to_string().eq(SONIC_PROGRAM_ID) {
+        if pubkey.to_string().eq(&self.config.sonic_program_id) {
             return self.has_account(pubkey);
         }
         false
@@ -281,15 +379,15 @@ impl RemoteAccountLoader {
     /// Send a transaction to the base layer to update the status of the account.
     pub fn send_status_to_baselayer(&self, program_id: &Pubkey, account: &Pubkey, value:u64) -> Option<Signature> {
         let mut time = Measure::start("load_account_from_remote");
-        let payer = Keypair::from_base58_string("5gA6JTpFziXu7py2j63arRUq1H29p6pcPMB74LaNuzcSqULPD6s1SZUS3UMPvFEE9oXmt1kk6ez3C6piTc3bwpJ6");
+        let payer = Keypair::from_base58_string(&self.config.keypair_base58);
         // let program_id = Pubkey::from_str(SONIC_PROGRAM_ID).unwrap();
 
         let setlocker_data = SetLockerInstruction {
-            instruction: [0x20, 0xda, 0x0f, 0x29, 0x6e, 0x40, 0xf2, 0x0f],
+            instruction: hash_instruction_method("setlocker"), //[0x20, 0xda, 0x0f, 0x29, 0x6e, 0x40, 0xf2, 0x0f],
             locker: payer.pubkey(),
         };
         let setvalue_data = SetValueInstruction {
-            instruction: [0x60, 0xca, 0x6c, 0x93, 0x6b, 0x11, 0x69, 0x5f],
+            instruction: hash_instruction_method("setvalue"), //[0x60, 0xca, 0x6c, 0x93, 0x6b, 0x11, 0x69, 0x5f],
             value,
         };
 
@@ -318,15 +416,17 @@ impl RemoteAccountLoader {
         );
         let blockhash = self.rpc_client.get_latest_blockhash().unwrap();
         transaction.sign(&[&payer], blockhash);
-        let result = self.rpc_client.send_and_confirm_transaction(&transaction);
+        let result = self.rpc_client.send_transaction(&transaction); //send_and_confirm_transaction(&transaction);
         time.stop();
         match result {
             Ok(signature) => {
-                println!("send_transaction_to_baselayer: success {:?}, {}", signature, time.as_us());
+               
+                //reload the account
+                self.load_account_via_rpc(account);
                 Some(signature)
             },
             Err(e) => {
-                println!("send_transaction_to_baselayer: failed: {:?}, {}", e, time.as_us());
+                
                 None
             }
         }
@@ -339,36 +439,35 @@ impl RemoteAccountLoader {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use solana_sdk::clock::Slot;
 
     #[test]
     fn test_remote_account_loader() {
-        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
-        let pubkey = Pubkey::from_str("").unwrap();
+        let loader = RemoteAccountLoader::default();
+        let pubkey = Pubkey::from_str("4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z").unwrap();
         let account = loader.get_account(&pubkey);
         assert_eq!(account.is_none(), true);
     }
     
     #[test]
     fn test_remote_account_loader2() {
-        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
-        let pubkey = Pubkey::from_str("").unwrap();
+        let loader = RemoteAccountLoader::default();
+        let pubkey = Pubkey::from_str("4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z").unwrap();
         let account = loader.has_account(&pubkey);
         assert_eq!(account, false);
     }
 
     #[test]
     fn test_remote_account_loader3() {
-        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
-        let pubkey = Pubkey::from_str("").unwrap();
+        let loader = RemoteAccountLoader::default();
+        let pubkey = Pubkey::from_str("4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z").unwrap();
         let account = loader.load_account(&pubkey);
         assert_eq!(account.is_none(), true);
     }
 
     #[test]
     fn test_remote_account_loader4() {
-        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
-        let pubkey = Pubkey::from_str("").unwrap();
+        let loader = RemoteAccountLoader::default();
+        let pubkey = Pubkey::from_str("4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z").unwrap();
         loader.deactivate_account(&pubkey);
         let account = loader.get_account(&pubkey);
         assert_eq!(account.is_none(), true);
@@ -376,8 +475,8 @@ mod tests {
     
     #[test]
     fn test_remote_account_loader5() {
-        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
-        let pubkey = Pubkey::from_str("").unwrap();
+        let loader = RemoteAccountLoader::default();
+        let pubkey = Pubkey::from_str("4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z").unwrap();
         loader.deactivate_account(&pubkey);
         let account = loader.has_account(&pubkey);
         assert_eq!(account, false);
@@ -385,8 +484,8 @@ mod tests {
 
     #[test]
     fn test_remote_account_loader6() {
-        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
-        let pubkey = Pubkey::from_str("").unwrap();
+        let loader = RemoteAccountLoader::default();
+        let pubkey = Pubkey::from_str("4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z").unwrap();
         let account = loader.load_account(&pubkey);
         assert_eq!(account.is_none(), true);
     }
