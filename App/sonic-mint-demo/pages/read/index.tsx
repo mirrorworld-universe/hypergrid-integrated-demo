@@ -160,7 +160,12 @@ export default function Read() {
         .signers([newAccount])
         .rpc();
 
-      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      let txhash = '';
+      if (currentNet.value == Devnet.value) {
+        txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      } else {
+        txhash = `${currentNet.explorer}/tx/${tx}?cluster=custom&customUrl=${currentNet.value}`;
+      }
       console.log(`mint nft tx: `, txhash);
       setMintNftTX(txhash);
 
