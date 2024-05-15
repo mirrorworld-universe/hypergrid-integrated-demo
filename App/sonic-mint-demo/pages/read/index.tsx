@@ -217,7 +217,7 @@ export default function Read() {
 
       let provider = anchor.getProvider();
       const tx = await provider.sendAndConfirm(transaction);
-      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=custom&customUrl=${currentNet.value}`;
       console.log(`sync request tx: `, txhash);
       setSyncRequestTX(txhash);
 
@@ -261,7 +261,7 @@ export default function Read() {
   }
 
   async function clearCache() {
-    if (isLoading || stepIndex !== 3 || !mintProgramId || currentNet.value == Devnet.value || !newAccount) return;
+    if (isLoading || !mintProgramId || currentNet.value == Devnet.value || !newAccount) return;
     setIsLoading(true);
     try {
       const transaction = new Transaction();
@@ -303,9 +303,11 @@ export default function Read() {
         ))}
       </div>
 
-      {/* <Button width="100%" bg="#2828b2" isLoading={isLoading} onClick={clearCache}>
-        clear cache
-      </Button> */}
+      {/* {stepIndex == 3 && (
+        <Button width="100%" bg="#2828b2" isLoading={isLoading} onClick={clearCache}>
+          clear cache
+        </Button>
+      )} */}
 
       {stepIndex == 1 && (
         <div className="rowbox animate__animated animate__zoomIn">

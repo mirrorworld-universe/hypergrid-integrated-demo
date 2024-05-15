@@ -45,24 +45,19 @@ export default function Write() {
   const [upgradeStatus, setUpgradeStatus] = useState(false);
   const [upgrade2Status, setUpgrade2Status] = useState(false);
   const [mintNftTX, setMintNftTX] = useState('');
-  const [L1LockTX, setL1LockTX] = useState('');
-  const [L1SetValue, setL1SetValueTX] = useState('');
+  const [mintNftAcount, setMintNftAcount] = useState('');
+  const [L1SetValueTX, setL1SetValueTX] = useState('');
   const [L2SetValueTX, setL2SetValueTX] = useState('');
 
   const [newAccount, setNewAccount] = useState<any>();
   const [mintProgramId, setMintProgramId] = useState(`4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z`);
-  const [metadata, setMetadata] = useState<any>({
-    name: 'Sonic NFT',
-    symbol: 'SNFT',
-    description: 'Sonic Warrior - Type II',
-    image: 'https://bafybeigrhybzerxl2ey63bfhy4dz6r47m52mvs37w7jimsnccdmieilrxa.ipfs.nftstorage.link/2.jpg',
-    level: 1
-  });
+  const [metadata, setMetadata] = useState<any>({});
   const syncProgramId = 'SonicAccountMigrater11111111111111111111111';
 
-  // useEffect(() => {
-  //   console.log('currentNet', currentNet);
-  // }, [currentNet]);
+  useEffect(() => {
+    // console.log('currentNet', currentNet);
+    // getTransaction('2DVnJQV6JcTkcopobJGZGPYsQQrUr2J2Sn25hcYCJfEr1vYxFc7JaUpKgFiSF4j9gSaNSf7wJAdvfgsJJWsfExT2');
+  }, [currentNet]);
 
   function toConfirm() {
     if (!anchorWallet || !anchorWallet.publicKey) return toast({ title: 'Connect wallet', status: 'warning' });
@@ -164,7 +159,6 @@ export default function Write() {
       const uri = `https://bafybeieknoava43popez3aroo6umnv24gwy75jfvlcpsoz57ebvqpj5y54.ipfs.nftstorage.link/${num}.json`;
       const response = await axios.get(uri);
       const metadata_ = { ...response.data, uri, level: 1 };
-      setMetadata(metadata_);
       setIsLoading(false);
       mintNft(metadata_);
     } catch (error) {
@@ -174,7 +168,7 @@ export default function Write() {
     }
   }
 
-  async function mintNft(metadata: any) {
+  async function mintNft(metadata) {
     if (isLoading) return;
     setIsLoading(true);
     try {
@@ -189,6 +183,21 @@ export default function Write() {
       const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
       console.log(`mint nft tx: `, txhash);
       setMintNftTX(txhash);
+
+      const account = `${currentNet.explorer}/address/${newAccount.publicKey}?cluster=devnet`;
+      console.log(`mint acount: `, account);
+      setMintNftAcount(account);
+
+      const newMint = await program.account.mint.fetch(newAccount.publicKey);
+      console.log('newMint', newMint);
+      const metadata_ = {
+        ...metadata,
+        name: newMint.name.toString(),
+        uri: newMint.uri.toString(),
+        level: Number(newMint.level),
+        locker: newMint.locker.toString()
+      };
+      setMetadata(metadata_);
 
       setIsLoading(false);
       openMintSuccess();
@@ -214,23 +223,34 @@ export default function Write() {
       });
 
       const program = new anchor.Program(hgnft as anchor.Idl, mintProgramId);
+
       const instruction2 = await program.methods
         .fakesetvalue(new BN(metadata.level))
         .accounts({ mint: newAccount.publicKey })
         .instruction();
 
-      console.log('instruction1', instruction1);
-      console.log('instruction2', instruction2);
       transaction.add(instruction1);
       transaction.add(instruction2);
 
       let provider: any = anchor.getProvider();
-
       const tx = await provider.sendAndConfirm(transaction);
-      console.log(`sync request tx: `, tx);
-
-      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=custom&customUrl=${currentNet.value}`;
+      console.log(`L2SetValueTX`, txhash);
       setL2SetValueTX(txhash);
+
+      const transactionRes = await getTransaction(tx);
+      if (transactionRes) {
+        const logMessages = transactionRes.meta.logMessages;
+        const targetPrefix = 'Sonic BaseLayer Transaction Signature: ';
+        const targetMessage = logMessages.find((message) => message.startsWith(targetPrefix));
+        if (targetMessage) {
+          const tx = targetMessage.slice(targetPrefix.length);
+          const txhash = `${Devnet.explorer}/tx/${tx}?cluster=devnet`;
+          console.log('L1SetValueTX', txhash);
+          setL1SetValueTX(txhash);
+        }
+      }
+
       setIsLoading(false);
       openUpgradeSuccess();
     } catch (error) {
@@ -248,7 +268,7 @@ export default function Write() {
   }
 
   async function clearCache() {
-    if (isLoading || stepIndex !== 3 || !mintProgramId || currentNet.value == Devnet.value || !newAccount) return;
+    if (isLoading || !mintProgramId || currentNet.value == Devnet.value || !newAccount) return;
 
     setIsLoading(true);
     try {
@@ -273,6 +293,28 @@ export default function Write() {
     }
   }
 
+  async function getTransaction(signature: string) {
+    const res = await axios.post(
+      currentNet.value,
+      {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'getTransaction',
+        params: [
+          signature,
+          {
+            commitment: 'confirmed',
+            encoding: 'jsonParsed',
+            maxSupportedTransactionVersion: 0
+          }
+        ]
+      },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+    // console.log('getTransaction', res.data.result);
+    return res.data.result;
+  }
+
   return (
     <>
       <div className="page_title">Sync and modify the Solana Devnet NFT program on Hypergrid</div>
@@ -289,9 +331,11 @@ export default function Write() {
         ))}
       </div>
 
-      {/* <Button width="100%" bg="#2828b2" isLoading={isLoading} onClick={clearCache}>
-        clear cache
-      </Button> */}
+      {/* {stepIndex == 3 && (
+        <Button width="100%" bg="#2828b2" isLoading={isLoading} onClick={clearCache}>
+          clear cache
+        </Button>
+      )} */}
 
       {stepIndex == 1 && (
         <div className="rowbox animate__animated animate__zoomIn">
@@ -443,13 +487,6 @@ export default function Write() {
                     <span>level: {metadata.level}</span>
                     {lockStatus && <LockIcon className="lock animate__animated animate__zoomInDown" />}
                   </p>
-                  {lockStatus && (
-                    <div className="linkbox animate__animated animate__fadeIn">
-                      <Link href={L1LockTX} isExternal>
-                        L1 Lock tx
-                      </Link>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
@@ -468,11 +505,6 @@ export default function Write() {
                       </div>
                       <p className="name">{metadata.name}</p>
                       <p className="level active">level: {metadata.level + 1}</p>
-                    </div>
-                    <div className="linkbox animate__animated animate__fadeIn">
-                      <Link href={L1SetValue} isExternal>
-                        L1 Set Value tx
-                      </Link>
                     </div>
                   </>
                 ) : (
@@ -507,6 +539,9 @@ export default function Write() {
                       <p className="level active">level: {metadata.level + 1}</p>
                     </div>
                     <div className="linkbox animate__animated animate__fadeIn">
+                      <Link href={L1SetValueTX} isExternal>
+                        L1 Set Value tx
+                      </Link>
                       <Link href={L2SetValueTX} isExternal>
                         L2 Set Value tx
                       </Link>
@@ -577,6 +612,9 @@ export default function Write() {
                   <Link href={mintNftTX} isExternal>
                     Mint NFT TX
                   </Link>
+                  <Link href={mintNftAcount} isExternal>
+                    Mint NFT Acount
+                  </Link>
                 </div>
               </div>
             )}
@@ -596,6 +634,9 @@ export default function Write() {
           <ModalCloseButton />
           <ModalBody>
             <div className="linkbox">
+              <Link href={L1SetValueTX} isExternal>
+                L1 Set Value TX
+              </Link>
               <Link href={L2SetValueTX} isExternal>
                 L2 Set Value TX
               </Link>
