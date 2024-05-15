@@ -285,6 +285,7 @@ export default function Write() {
       let provider = anchor.getProvider();
       const tx = await provider.sendAndConfirm(transaction);
       console.log('clear cache', tx);
+      setSyncStatus(false);
       setIsLoading(false);
       toast({ title: 'clear cache success', status: 'success' });
     } catch (error) {
