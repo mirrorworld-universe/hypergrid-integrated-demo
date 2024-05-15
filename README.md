@@ -30,7 +30,7 @@ See [Synchronize NFTs from the Base Layer to Hypergrid](https://internaldocs.son
 
 See [Modifying NFTs on the base layer through Hypergrid](https://internaldocs.sonic.game/images/write-demo.mp4)
     
-[![Alt text](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/read-demo.mp4.jpg)](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/tree/main/Docs/)
+[![Alt text](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/read-demo.jpg)](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/tree/main/Docs/)
 
   
 ## Quickstart
