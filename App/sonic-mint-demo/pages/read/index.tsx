@@ -51,6 +51,7 @@ export default function Read() {
   const [isLoading, setIsLoading] = useState(false);
   const [syncStatus, setSyncStatus] = useState(false);
   const [mintNftTX, setMintNftTX] = useState('');
+  const [mintNftAcount, setMintNftAcount] = useState('');
   const [syncRequestTX, setSyncRequestTX] = useState('');
 
   const [newAccount, setNewAccount] = useState<any>();
@@ -160,14 +161,20 @@ export default function Read() {
         .signers([newAccount])
         .rpc();
 
+      let account = '';
       let txhash = '';
       if (currentNet.value == Devnet.value) {
         txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+        account = `${currentNet.explorer}/address/${newAccount.publicKey}?cluster=devnet`;
       } else {
         txhash = `${currentNet.explorer}/tx/${tx}?cluster=custom&customUrl=${currentNet.value}`;
+        account = `${currentNet.explorer}/address/${newAccount.publicKey}?cluster=custom&customUrl=${currentNet.value}`;
       }
       console.log(`mint nft tx: `, txhash);
       setMintNftTX(txhash);
+
+      console.log(`mint acount: `, account);
+      setMintNftAcount(account);
 
       setIsLoading(false);
       openMintSuccess();
@@ -282,6 +289,7 @@ export default function Read() {
       let provider = anchor.getProvider();
       const tx = await provider.sendAndConfirm(transaction);
       console.log('clear cache', tx);
+      setSyncStatus(false);
       setIsLoading(false);
       toast({ title: 'clear cache success', status: 'success' });
     } catch (error) {
@@ -308,11 +316,11 @@ export default function Read() {
         ))}
       </div>
 
-      {/* {stepIndex == 3 && (
+      {stepIndex == 3 && (
         <Button width="100%" bg="#2828b2" isLoading={isLoading} onClick={clearCache}>
           clear cache
         </Button>
-      )} */}
+      )}
 
       {stepIndex == 1 && (
         <div className="rowbox animate__animated animate__zoomIn">
@@ -469,6 +477,9 @@ export default function Read() {
                 <div className="linkbox">
                   <Link href={mintNftTX} isExternal>
                     Mint NFT TX
+                  </Link>
+                  <Link href={mintNftAcount} isExternal>
+                    Mint NFT Acount
                   </Link>
                 </div>
               </div>
