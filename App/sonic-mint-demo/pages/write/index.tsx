@@ -45,12 +45,12 @@ export default function Write() {
   const [upgradeStatus, setUpgradeStatus] = useState(false);
   const [upgrade2Status, setUpgrade2Status] = useState(false);
   const [mintNftTX, setMintNftTX] = useState('');
-  const [mintNftAcount, setMintNftAcount] = useState('');
+  const [mintNftAccount, setMintNftAccount] = useState('');
   const [L1SetValueTX, setL1SetValueTX] = useState('');
   const [L2SetValueTX, setL2SetValueTX] = useState('');
 
   const [newAccount, setNewAccount] = useState<any>();
-  const [mintProgramId, setMintProgramId] = useState(``); //4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z
+  const [mintProgramId, setMintProgramId] = useState(`4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z`); //4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z
   const [metadata, setMetadata] = useState<any>({});
   const syncProgramId = 'SonicAccountMigrater11111111111111111111111';
 
@@ -147,6 +147,7 @@ export default function Write() {
   function generateAccount() {
     if (!mintProgramId) return toast({ title: 'Fill in the Devnet program ID', status: 'warning' });
     const newAccount_ = anchor.web3.Keypair.generate();
+    console.log(anchor.web3.Keypair.generate());
     setNewAccount(newAccount_);
     setStepIndex(2);
   }
@@ -184,9 +185,10 @@ export default function Write() {
       console.log(`mint nft tx: `, txhash);
       setMintNftTX(txhash);
 
+      console.log('newAccount', newAccount.publicKey.toBase58());
       const account = `${currentNet.explorer}/address/${newAccount.publicKey}?cluster=devnet`;
-      console.log(`mint acount: `, account);
-      setMintNftAcount(account);
+      console.log(`mint Account: `, account);
+      setMintNftAccount(account);
 
       const newMint = await program.account.mint.fetch(newAccount.publicKey);
       console.log('newMint', newMint);
@@ -613,8 +615,8 @@ export default function Write() {
                   <Link href={mintNftTX} isExternal>
                     Mint NFT TX
                   </Link>
-                  <Link href={mintNftAcount} isExternal>
-                    Mint NFT Acount
+                  <Link href={mintNftAccount} isExternal>
+                    Mint NFT Account
                   </Link>
                 </div>
               </div>

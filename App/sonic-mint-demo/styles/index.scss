@@ -99,9 +99,9 @@ body {
 
 .AppBody {
   min-width: 980px;
-  min-height: 100vh;
+  min-height: calc(100vh - 5px);
   width: 100%;
-  padding: 60px 0;
+  padding: 60px 0 20px;
   overflow-y: auto;
   position: relative;
 }

@@ -51,7 +51,7 @@ export default function Read() {
   const [isLoading, setIsLoading] = useState(false);
   const [syncStatus, setSyncStatus] = useState(false);
   const [mintNftTX, setMintNftTX] = useState('');
-  const [mintNftAcount, setMintNftAcount] = useState('');
+  const [mintNftAccount, setMintNftAccount] = useState('');
   const [syncRequestTX, setSyncRequestTX] = useState('');
 
   const [newAccount, setNewAccount] = useState<any>();
@@ -173,8 +173,8 @@ export default function Read() {
       console.log(`mint nft tx: `, txhash);
       setMintNftTX(txhash);
 
-      console.log(`mint acount: `, account);
-      setMintNftAcount(account);
+      console.log(`mint Account: `, account);
+      setMintNftAccount(account);
 
       setIsLoading(false);
       openMintSuccess();
@@ -478,8 +478,8 @@ export default function Read() {
                   <Link href={mintNftTX} isExternal>
                     Mint NFT TX
                   </Link>
-                  <Link href={mintNftAcount} isExternal>
-                    Mint NFT Acount
+                  <Link href={mintNftAccount} isExternal>
+                    Mint NFT Account
                   </Link>
                 </div>
               </div>
