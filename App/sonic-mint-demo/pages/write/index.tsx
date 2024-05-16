@@ -50,7 +50,7 @@ export default function Write() {
   const [L2SetValueTX, setL2SetValueTX] = useState('');
 
   const [newAccount, setNewAccount] = useState<any>();
-  const [mintProgramId, setMintProgramId] = useState(`4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z`);
+  const [mintProgramId, setMintProgramId] = useState(``); //4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z
   const [metadata, setMetadata] = useState<any>({});
   const syncProgramId = 'SonicAccountMigrater11111111111111111111111';
 
