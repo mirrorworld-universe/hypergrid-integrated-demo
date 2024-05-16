@@ -26,11 +26,11 @@ A comprehensive demonstration that showcases the ability to read and write data 
 
 We have produced two videos to demonstrate the features of our product:
 
-See [Synchronize NFTs from the Base Layer to Hypergrid](https://internaldocs.sonic.game/images/read-demo.mp4)  
+See [Synchronize NFTs from the Base Layer to Hypergrid](https://drive.google.com/file/d/1BtoHG5AAR19bBU4jKtn-hHpCv9wOhI9v/view)  
 
-See [Modifying NFTs on the base layer through Hypergrid](https://internaldocs.sonic.game/images/write-demo.mp4)
+See [Modifying NFTs on the base layer through Hypergrid](https://drive.google.com/file/d/1m6HvzEmP06jOanfm8ubSSPEE8MPpcuBq/view)
     
-[![Alt text](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/read-demo.mp4.jpg)](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/tree/main/Docs/)
+[![Alt text](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/blob/main/Docs/read-demo.jpg)](https://github.com/mirrorworld-universe/hypergrid-integrated-demo/tree/main/Docs/)
 
   
 ## Quickstart

@@ -51,6 +51,7 @@ export default function Read() {
   const [isLoading, setIsLoading] = useState(false);
   const [syncStatus, setSyncStatus] = useState(false);
   const [mintNftTX, setMintNftTX] = useState('');
+  const [mintNftAccount, setMintNftAccount] = useState('');
   const [syncRequestTX, setSyncRequestTX] = useState('');
 
   const [newAccount, setNewAccount] = useState<any>();
@@ -160,9 +161,20 @@ export default function Read() {
         .signers([newAccount])
         .rpc();
 
-      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      let account = '';
+      let txhash = '';
+      if (currentNet.value == Devnet.value) {
+        txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+        account = `${currentNet.explorer}/address/${newAccount.publicKey}?cluster=devnet`;
+      } else {
+        txhash = `${currentNet.explorer}/tx/${tx}?cluster=custom&customUrl=${currentNet.value}`;
+        account = `${currentNet.explorer}/address/${newAccount.publicKey}?cluster=custom&customUrl=${currentNet.value}`;
+      }
       console.log(`mint nft tx: `, txhash);
       setMintNftTX(txhash);
+
+      console.log(`mint Account: `, account);
+      setMintNftAccount(account);
 
       setIsLoading(false);
       openMintSuccess();
@@ -217,7 +229,7 @@ export default function Read() {
 
       let provider = anchor.getProvider();
       const tx = await provider.sendAndConfirm(transaction);
-      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
+      const txhash = `${currentNet.explorer}/tx/${tx}?cluster=custom&customUrl=${currentNet.value}`;
       console.log(`sync request tx: `, txhash);
       setSyncRequestTX(txhash);
 
@@ -261,7 +273,7 @@ export default function Read() {
   }
 
   async function clearCache() {
-    if (isLoading || stepIndex !== 3 || !mintProgramId || currentNet.value == Devnet.value || !newAccount) return;
+    if (isLoading || !mintProgramId || currentNet.value == Devnet.value || !newAccount) return;
     setIsLoading(true);
     try {
       const transaction = new Transaction();
@@ -277,6 +289,7 @@ export default function Read() {
       let provider = anchor.getProvider();
       const tx = await provider.sendAndConfirm(transaction);
       console.log('clear cache', tx);
+      setSyncStatus(false);
       setIsLoading(false);
       toast({ title: 'clear cache success', status: 'success' });
     } catch (error) {
@@ -303,9 +316,11 @@ export default function Read() {
         ))}
       </div>
 
-      {/* <Button width="100%" bg="#2828b2" isLoading={isLoading} onClick={clearCache}>
-        clear cache
-      </Button> */}
+      {stepIndex == 3 && (
+        <Button width="100%" bg="#2828b2" isLoading={isLoading} onClick={clearCache}>
+          clear cache
+        </Button>
+      )}
 
       {stepIndex == 1 && (
         <div className="rowbox animate__animated animate__zoomIn">
@@ -462,6 +477,9 @@ export default function Read() {
                 <div className="linkbox">
                   <Link href={mintNftTX} isExternal>
                     Mint NFT TX
+                  </Link>
+                  <Link href={mintNftAccount} isExternal>
+                    Mint NFT Account
                   </Link>
                 </div>
               </div>
