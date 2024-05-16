@@ -45,12 +45,12 @@ export default function Write() {
   const [upgradeStatus, setUpgradeStatus] = useState(false);
   const [upgrade2Status, setUpgrade2Status] = useState(false);
   const [mintNftTX, setMintNftTX] = useState('');
-  const [mintNftAccount, setMintNftAccount] = useState('');
+  // const [mintNftAccount, setMintNftAccount] = useState('');
   const [L1SetValueTX, setL1SetValueTX] = useState('');
   const [L2SetValueTX, setL2SetValueTX] = useState('');
 
   const [newAccount, setNewAccount] = useState<any>();
-  const [mintProgramId, setMintProgramId] = useState(`4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z`); //4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z
+  const [mintProgramId, setMintProgramId] = useState(``); //4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z
   const [metadata, setMetadata] = useState<any>({});
   const syncProgramId = 'SonicAccountMigrater11111111111111111111111';
 
@@ -185,10 +185,10 @@ export default function Write() {
       console.log(`mint nft tx: `, txhash);
       setMintNftTX(txhash);
 
-      console.log('newAccount', newAccount.publicKey.toBase58());
-      const account = `${currentNet.explorer}/address/${newAccount.publicKey}?cluster=devnet`;
-      console.log(`mint Account: `, account);
-      setMintNftAccount(account);
+      // console.log('newAccount', newAccount.publicKey.toBase58());
+      // const account = `${currentNet.explorer}/address/${newAccount.publicKey}?cluster=devnet`;
+      // console.log(`mint Account: `, account);
+      // setMintNftAccount(account);
 
       const newMint = await program.account.mint.fetch(newAccount.publicKey);
       console.log('newMint', newMint);
@@ -227,7 +227,7 @@ export default function Write() {
       const program = new anchor.Program(hgnft as anchor.Idl, mintProgramId);
 
       const instruction2 = await program.methods
-        .fakesetvalue(new BN(metadata.level))
+        .fakesetvalue(new BN(metadata.level + 1))
         .accounts({ mint: newAccount.publicKey })
         .instruction();
 
@@ -615,9 +615,9 @@ export default function Write() {
                   <Link href={mintNftTX} isExternal>
                     Mint NFT TX
                   </Link>
-                  <Link href={mintNftAccount} isExternal>
+                  {/* <Link href={mintNftAccount} isExternal>
                     Mint NFT Account
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
             )}
