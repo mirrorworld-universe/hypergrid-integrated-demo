@@ -326,8 +326,7 @@ export default function Write() {
           <div
             key={step}
             className={`animate__animated animate__zoomIn ${stepIndex >= step ? 'active' : ''}`}
-            style={{ animationDelay: `${(step - 1) * 0.1}s` }}
-            onClick={() => setStepIndex(step)}>
+            style={{ animationDelay: `${(step - 1) * 0.1}s` }}>
             Stage: {step}
             {stepIndex == step && <BorderAngular />}
           </div>
@@ -421,20 +420,7 @@ export default function Write() {
                 <div key={step}>
                   <div
                     className={`animate__animated animate__zoomIn ${stepIndex2 >= step ? 'active' : ''}`}
-                    style={{ animationDelay: `${(step - 1) * 0.1}s` }}
-                    onClick={() => {
-                      setStepIndex2(step);
-                      if (step == 1) {
-                        nextStep();
-                      } else if (step == 2) {
-                        nextStep2();
-                      } else if (step == 3) {
-                        nextStep3();
-                      } else if (step == 4) {
-                        nextStep4();
-                      } else if (step == 5) {
-                      }
-                    }}>
+                    style={{ animationDelay: `${(step - 1) * 0.1}s` }}>
                     {step}
                   </div>
                   {step < steps2.length && (

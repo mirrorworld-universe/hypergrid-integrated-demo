@@ -308,8 +308,7 @@ export default function Read() {
           <div
             key={step}
             className={`animate__animated animate__zoomIn ${stepIndex >= step ? 'active' : ''}`}
-            style={{ animationDelay: `${(step - 1) * 0.1}s` }}
-            onClick={() => setStepIndex(step)}>
+            style={{ animationDelay: `${(step - 1) * 0.1}s` }}>
             Stage: {step}
             {stepIndex == step && <BorderAngular />}
           </div>
