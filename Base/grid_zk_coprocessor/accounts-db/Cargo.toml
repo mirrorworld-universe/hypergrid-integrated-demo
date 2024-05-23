@@ -25,6 +25,7 @@ byteorder = { workspace = true }
 bzip2 = { workspace = true }
 crossbeam-channel = { workspace = true }
 dashmap = { workspace = true, features = ["rayon", "raw-api"] }
+dirs-next = { workspace = true }
 flate2 = { workspace = true }
 fnv = { workspace = true }
 im = { workspace = true, features = ["rayon", "serde"] }
@@ -48,6 +49,8 @@ regex = { workspace = true }
 seqlock = { workspace = true }
 serde = { workspace = true, features = ["rc"] }
 serde_derive = { workspace = true }
+serde_yaml = { workspace = true }
+sha2 = { workspace = true }
 smallvec = { workspace = true }
 solana-bucket-map = { workspace = true }
 solana-client = {workspace = true}

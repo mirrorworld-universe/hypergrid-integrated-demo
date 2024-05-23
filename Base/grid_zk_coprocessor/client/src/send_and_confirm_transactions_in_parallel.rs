@@ -32,9 +32,10 @@ use {
     sonic_printer::{func, show},
 };
 
-const BLOCKHASH_REFRESH_RATE: Duration = Duration::from_secs(5);
-const TPU_RESEND_REFRESH_RATE: Duration = Duration::from_secs(2);
-const SEND_INTERVAL: Duration = Duration::from_millis(10);
+// Sonic Rate
+const BLOCKHASH_REFRESH_RATE: Duration = Duration::from_secs(5); //default 5
+const TPU_RESEND_REFRESH_RATE: Duration = Duration::from_secs(2); //default 2
+const SEND_INTERVAL: Duration = Duration::from_millis(50); //default 10
 type QuicTpuClient = TpuClient<QuicPool, QuicConnectionManager, QuicConfig>;
 
 #[derive(Clone, Debug)]

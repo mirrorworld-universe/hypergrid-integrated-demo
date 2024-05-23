@@ -257,13 +257,7 @@ impl AccountsCache {
     pub fn load_accounts_from_remote(&self, pubkeys: Vec<Pubkey>) {
         pubkeys.iter().for_each(|pubkey| {
             //Sonic: load from remote
-            if let Some(account) = self.remote_loader.load_account(pubkey) {
-                //Sonic: check if programdata account exists
-                if let Some(programdata_address) = RemoteAccountLoader::has_programdata_account(account) {
-                    //Sonic: load programdata account from remote
-                    self.remote_loader.load_account(&programdata_address);
-                }
-            }
+            self.remote_loader.load_account(pubkey);
         });
     }
 

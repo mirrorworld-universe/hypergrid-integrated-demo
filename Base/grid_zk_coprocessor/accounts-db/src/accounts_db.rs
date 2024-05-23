@@ -113,7 +113,6 @@ use {
         time::{Duration, Instant},
     },
     tempfile::TempDir,
-    sonic_printer::{show, func},
 };
 
 const PAGE_SIZE: u64 = 4 * 1024;
@@ -7719,6 +7718,17 @@ impl AccountsDb {
                 .map(|d| d.as_ref().unwrap().get_cache_hash_data())
                 .collect::<Vec<_>>();
 
+            //Sonic: calculate the total lamports of remote accounts
+            let mut lamports: u64 = 0;
+            for chis in cache_hash_intermediates.clone() {
+                for item in chis {
+                    if self.accounts_cache.has_account_from_remote(&item.pubkey) {
+                        println!("==== remote key: {:?}", item);
+                        lamports += item.lamports;
+                    }  
+                }
+            }
+
             // turn raw data into merkle tree hashes and sum of lamports
             let (accounts_hash, capitalization) =
                 accounts_hasher.rest_of_hash_calculation(&cache_hash_intermediates, &mut stats);
@@ -7728,6 +7738,10 @@ impl AccountsDb {
                     AccountsHashKind::Incremental(IncrementalAccountsHash(accounts_hash))
                 }
             };
+
+            //Sonic: subtract the lamports of remote accounts from the capitalization
+            let capitalization = capitalization - lamports;
+
             info!("calculate_accounts_hash_from_storages: slot: {slot}, {accounts_hash:?}, capitalization: {capitalization}");
             Ok((accounts_hash, capitalization))
         };
