@@ -37,6 +37,14 @@ pub mod hgnft {
         msg!("NFT Locker: { }", mint.locker);
         Ok(())
     }
+
+    pub fn fakesetvalue(ctx: Context<FakeSetValue>, level: u64) -> Result<()> {
+        let mint: &_ = &ctx.accounts.mint;
+        msg!("Fake NFT Set Value");
+        msg!("Fake NFT Old Value: { }", mint.level);
+        msg!("Fake NFT New Value: { }", level);
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -60,6 +68,13 @@ pub struct SetValue<'info> {
     #[account(mut, has_one = locker)]
     pub mint: Account<'info, Mint>,
     pub locker: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct FakeSetValue<'info> {
+    #[account()]
+    pub mint: Account<'info, Mint>,
+    pub user: Signer<'info>,
 }
 
 #[account]
