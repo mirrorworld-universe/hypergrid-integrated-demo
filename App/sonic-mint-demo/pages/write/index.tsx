@@ -45,7 +45,6 @@ export default function Write() {
   const [upgradeStatus, setUpgradeStatus] = useState(false);
   const [upgrade2Status, setUpgrade2Status] = useState(false);
   const [mintNftTX, setMintNftTX] = useState('');
-  // const [mintNftAccount, setMintNftAccount] = useState('');
   const [L1SetValueTX, setL1SetValueTX] = useState('');
   const [L2SetValueTX, setL2SetValueTX] = useState('');
 
@@ -53,11 +52,6 @@ export default function Write() {
   const [mintProgramId, setMintProgramId] = useState(``); //4WTUyXNcf6QCEj76b3aRDLPewkPGkXFZkkyf3A3vua1z
   const [metadata, setMetadata] = useState<any>({});
   const syncProgramId = 'SonicAccountMigrater11111111111111111111111';
-
-  useEffect(() => {
-    // console.log('currentNet', currentNet);
-    // getTransaction('2DVnJQV6JcTkcopobJGZGPYsQQrUr2J2Sn25hcYCJfEr1vYxFc7JaUpKgFiSF4j9gSaNSf7wJAdvfgsJJWsfExT2');
-  }, [currentNet]);
 
   function toConfirm() {
     if (!anchorWallet || !anchorWallet.publicKey) return toast({ title: 'Connect wallet', status: 'warning' });
@@ -147,7 +141,7 @@ export default function Write() {
   function generateAccount() {
     if (!mintProgramId) return toast({ title: 'Fill in the Devnet program ID', status: 'warning' });
     const newAccount_ = anchor.web3.Keypair.generate();
-    console.log(anchor.web3.Keypair.generate());
+    console.log('newAccount_', newAccount_);
     setNewAccount(newAccount_);
     setStepIndex(2);
   }
@@ -179,27 +173,13 @@ export default function Write() {
         .mintnft(metadata.name, metadata.uri, new BN(metadata.level))
         .accounts({ mint: newAccount.publicKey })
         .signers([newAccount])
-        .rpc();
+        .rpc({ commitment: 'confirmed' });
 
       const txhash = `${currentNet.explorer}/tx/${tx}?cluster=devnet`;
       console.log(`mint nft tx: `, txhash);
       setMintNftTX(txhash);
 
-      // console.log('newAccount', newAccount.publicKey.toBase58());
-      // const account = `${currentNet.explorer}/address/${newAccount.publicKey}?cluster=devnet`;
-      // console.log(`mint Account: `, account);
-      // setMintNftAccount(account);
-
-      const newMint = await program.account.mint.fetch(newAccount.publicKey);
-      console.log('newMint', newMint);
-      const metadata_ = {
-        ...metadata,
-        name: newMint.name.toString(),
-        uri: newMint.uri.toString(),
-        level: Number(newMint.level),
-        locker: newMint.locker.toString()
-      };
-      setMetadata(metadata_);
+      setMetadata(metadata);
 
       setIsLoading(false);
       openMintSuccess();
@@ -601,9 +581,6 @@ export default function Write() {
                   <Link href={mintNftTX} isExternal>
                     Mint NFT TX
                   </Link>
-                  {/* <Link href={mintNftAccount} isExternal>
-                    Mint NFT Account
-                  </Link> */}
                 </div>
               </div>
             )}

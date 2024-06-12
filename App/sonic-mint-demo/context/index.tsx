@@ -31,7 +31,8 @@ export function PageProvider({ children }: PageProviderProps) {
   const Mainnet = { label: 'Solana-Mainnet', value: web3.clusterApiUrl('mainnet-beta') };
   const Devnet = {
     label: 'Solana-Devnet',
-    value: web3.clusterApiUrl('devnet'), // https://api.devnet.solana.com
+    // value: web3.clusterApiUrl('devnet'), // https://api.devnet.solana.com
+    value: 'https://solana-devnet.g.alchemy.com/v2/vizTJqI4vChIMEp_4PZVLNhDGRhOioZp',
     faucet: 'https://faucet.solana.com',
     explorer: 'https://explorer.solana.com'
   };
