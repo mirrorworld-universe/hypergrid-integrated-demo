@@ -13,7 +13,7 @@ const feePayer = Keypair.fromSecretKey(
 );
 
 const sonic_program_id = new PublicKey('SonicAccountMigrater11111111111111111111111');
-const account_to_migrate = new PublicKey("FaGWSo1NH5qHfLyFeU6KYACtwoHVDqLpe1JC5QjKn3hY")
+const account_to_migrate = new PublicKey("REPLACE_ACCOUNT")
 
 //build instruction data
 /**
