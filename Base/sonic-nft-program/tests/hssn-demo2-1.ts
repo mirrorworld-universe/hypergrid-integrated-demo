@@ -40,10 +40,10 @@ describe("hgnft", async () => {
     expect(metadata.level.eq(newMint.level));
 
     console.log(
-      `mint nft tx: https://explorer.solana.com/tx/${tx}?cluster=devnet`
+      `mint nft tx: https://explorer.sonic.game/tx/${tx}?cluster=custom&customUrl=https%3A%2F%2Fgrid-1.hypergrid.dev`
     );
     console.log(
-      `mint acount: https://explorer.solana.com/address/${mint.publicKey}?cluster=devnet`
+      `mint acount: https://explorer.sonic.game/address/${mint.publicKey}?cluster=custom&customUrl=https%3A%2F%2Fgrid-1.hypergrid.dev`
     );
-  });
+  }).timeout(15000);
 });

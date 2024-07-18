@@ -43,7 +43,7 @@ function migrateSourceAccounts(node_id, refresh) {
 async function migrate_accounts() {
   const transaction = new Transaction()
 
-  let node_id = new PublicKey('39cvwUEpgka9bU7Sn4my82VViMDWaCxi4YoPevfZxLf3'); 
+  let node_id = new PublicKey('HXQyiQxmVipgohFSDex3TSyFkFp6yttF1T3Rdp7fnfZP'); 
 
   const instruction = new TransactionInstruction({
     keys: [
