@@ -12,8 +12,8 @@ describe("hgnft", async () => {
 
   const mint = anchor.web3.Keypair.generate();
   const metadata = {
-    name: "Kobeni",
-    uri: "https://raw.githubusercontent.com/687c/solana-nft-native-client/main/metadata.json",
+    name: "Sonic NFT",
+    uri: "https://bafybeieknoava43popez3aroo6umnv24gwy75jfvlcpsoz57ebvqpj5y54.ipfs.nftstorage.link/1.json",
     level: new BN(1),
   };
 
