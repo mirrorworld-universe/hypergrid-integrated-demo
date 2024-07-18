@@ -6,6 +6,7 @@ const { Buffer } = require('buffer');
 let connection = new Connection("https://grid-2.hypergrid.dev", "confirmed")
 
 // My Wallet: EyYFxQ2FRcSkR8rdvefEDNy69KWHi2xTzbuVKxuBVueS
+// Can be replaced with your own wallet private key
 const feePayer = Keypair.fromSecretKey(
   bs58.decode(
     "5gA6JTpFziXu7py2j63arRUq1H29p6pcPMB74LaNuzcSqULPD6s1SZUS3UMPvFEE9oXmt1kk6ez3C6piTc3bwpJ6"
@@ -13,7 +14,7 @@ const feePayer = Keypair.fromSecretKey(
 );
 
 const sonic_program_id = new PublicKey('SonicAccountMigrater11111111111111111111111');
-const account_to_migrate = new PublicKey("REPLACE_ACCOUNT")
+const account_to_migrate = new PublicKey("REPLACE_ACCOUNT");
 
 //build instruction data
 /**
