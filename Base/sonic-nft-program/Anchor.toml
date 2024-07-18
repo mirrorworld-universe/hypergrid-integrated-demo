@@ -14,3 +14,4 @@ wallet = "./wallet.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test1 = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/hssn-demo2-1.ts"
