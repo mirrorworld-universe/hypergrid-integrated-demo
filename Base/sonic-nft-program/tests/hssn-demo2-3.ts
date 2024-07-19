@@ -35,10 +35,10 @@ describe("hgnft", async () => {
     expect(provider.publicKey.equals(newMint.locker));
 
     console.log(
-      `set locker tx: https://explorer.sonic.game/tx/${tx}?cluster=custom&customUrl=https%3A%2F%2Fgrid-1.hypergrid.dev`
+      `set locker tx: https://explorer.sonic.game/tx/${tx}?cluster=testnet`
     );
     console.log(
-      `mint acount: https://explorer.sonic.game/address/${mintPublicKey}?cluster=custom&customUrl=https%3A%2F%2Fgrid-1.hypergrid.dev`
+      `mint acount: https://explorer.sonic.game/address/${mintPublicKey}?cluster=testnet`
     );
   }).timeout(15000);
 
@@ -68,10 +68,10 @@ describe("hgnft", async () => {
     expect(newMint.locker.toString() == '11111111111111111111111111111111');
 
     console.log(
-      `set value tx: https://explorer.sonic.game/tx/${tx}?cluster=custom&customUrl=https%3A%2F%2Fgrid-1.hypergrid.dev`
+      `set value tx: https://explorer.sonic.game/tx/${tx}?cluster=testnet`
     );
     console.log(
-      `mint acount: https://explorer.sonic.game/address/${mintPublicKey}?cluster=custom&customUrl=https%3A%2F%2Fgrid-1.hypergrid.dev`
+      `mint acount: https://explorer.sonic.game/address/${mintPublicKey}?cluster=testnet`
     );
   }).timeout(15000);
 });
