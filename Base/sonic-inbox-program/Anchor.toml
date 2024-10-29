@@ -9,7 +9,7 @@ inbox = "5XJ1wZkTwAw9mc5FbM3eBgAT83TKgtAGzKos9wVxC6my"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "https://devnet.sonic.game"
+cluster = "testnet"
 wallet = "/Users/havencross/.config/solana/id.json"
 
 [scripts]
