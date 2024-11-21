@@ -3,7 +3,7 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-inbox = "5XJ1wZkTwAw9mc5FbM3eBgAT83TKgtAGzKos9wVxC6my"
+game = "7vULRbi3voKqainRSAFRZhqPDUvPi9NzedaW59VMevPM"
 
 [registry]
 url = "https://api.apr.dev"

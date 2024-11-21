@@ -1,0 +1,16 @@
+[features]
+seeds = false
+skip-lint = false
+
+[programs.devnet]
+game = "GjyDWR6kKxF9p4tECMi3Fq8E9wKGzAmtveuzKk3DN3TD"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "https://native-rpc.sonic.game"
+wallet = "/Users/havencross/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
