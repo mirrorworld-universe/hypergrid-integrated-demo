@@ -31,7 +31,7 @@ describe("game", async () => {
     // expect(blockData.hash == newBlock.hash);
 
     console.log(
-      `add log tx: https://explorer.solana.com/tx/${tx}?cluster=custom&customUrl=https%3A%2F%2Fnative-rpc.sonic.game`
+      `add log tx: https://explorer.sonic.game/tx/${tx}?cluster=custom&customUrl=https%3A%2F%2Fnative-rpc.sonic.game`
     );
   });
 });
